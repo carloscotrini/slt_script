@@ -1,0 +1,318 @@
+\chapter{Deterministic annealing}
+
+\section{The problem of centroid-based cluster-
+ing}
+\label{sec:problem}
+
+In this chapter, we consider the problem of centroid-based clustering. In
+this problem, an observation is a sample $X = \{x_1, \ldots, x_N\} \subseteq \mathbb{R}^d$ of points
+and our objective is to compute a set $\{\theta_1, \ldots, \theta_K\} \subseteq \mathbb{R}^d$ of $K$ centroids and a cluster assignment function $c : \mathbb{R}^d \to \{1, \ldots, K\}$, where $K \in \mathbb{N}$ is a hyperparameter.
+We let the hypothesis class $\mathcal{C}$ be all possible cluster assignment functions with fixed $K$.
+
+As cost function, we choose the $K$-means cost function:
+%
+\begin{equation}
+R(c, \theta, X) := \sum_{i \leq n} \left\|x_i - \theta_{c(i)}\right\|^2.
+\label{eq:k_means_cost_fun}
+\end{equation}
+%
+Note that, in contrast to $K$-means, we neither require $\theta_k$ to be the mean of all points in $X$ assigned to cluster $k$ nor that $c(x)$ is the index of the centroid closest to $x$.
+
+\section{Chapter outline}
+\label{sec:chapter_outline}
+
+In this chapter, we study how to apply simulated annealing to the problem
+of clustering, and derive a simplified version called deterministic annealing, proposed by Kenneth Rose~\cite{rose1998deterministic}. We compare deterministic annealing
+against a popular ERM approach, $K$-means, and empirically show that deterministic annealing often provides solutions that generalize better than
+$K$-means. Furthermore, combining deterministic annealing with posterior
+agreement gives a method to estimate the number of clusters while executing
+deterministic annealing.
+
+\subsection*{Deterministic annealing}
+
+Deterministic annealing originates from applying simulated annealing to
+clustering. We can summarize simulated annealing in this context in the
+following three steps.
+
+\begin{enumerate}
+\item Pick a first model $c$ and an initial (high) temperature.
+\item Use MCMC to draw a sample from $p(\cdot \mid X)$, the Gibbs distribution induced by $R(\cdot, \cdot, X)$, starting from $c$ as the first model in the sample.
+\item Decrease the temperature, let $c$ be the last model in the MCMC
+sample, and go to Step 2.
+\end{enumerate}
+
+We see in Section \ref{sec:gibbs_factorizes_da} that the Gibbs distribution induced by the cost
+function $R(\cdot, \cdot, X)$ is actually tractable. This means that we do not need to do MCMC sampling. We can instead directly computing the Gibbs distribution. The three steps become the following procedure, called \emph{deterministic annealing}:
+%
+\begin{enumerate}
+\item Pick an initial set of centroids and an initial (high) temperature.
+\item Compute the Gibbs distribution $p(\cdot \mid X)$, for $\theta$ arbitrary.
+\item Decrease the temperature and go to Step 2.
+\end{enumerate}
+%
+In Section~\ref{sec:computing_centroids_da}, we show that the centroids can then be computed as those that maximize the Gibbs distribution's entropy. However, this maximization is intractable, so we use the EM algorithm to efficiently compute an approximation. We combine all these insights to formulate the algorithm for deterministic annealing in Section~\ref{sec:algo_da}.
+
+In Section~\ref{sec:experiments}, we provide some experimental results comparing deterministic annealing against $K$-means. 
+
+In Section~\ref{sec:phase_transition}, we describe an interesting behavior of deterministic annealing.
+When the temperature is high, there is only one cluster containing
+all points and whose centroid is just the sample mean. As the temperature
+decreases, this cluster decomposes into several clusters that continue
+to decompose as the temperature keeps decreasing. One could argue that
+at a sufficiently low temperature, each point becomes its own cluster.
+
+Finally, in Section~\ref{sec:da_pa}, we exploit this behavior and posterior agreement to determine the number of clusters while executing deterministic annealing. This yields an extra advantage of deterministic annealing over other standard clustering methods like $K$-means which demand to set the number of clusters in advance.
+
+\section{Tractability of the Gibbs distribution}
+\label{sec:gibbs_factorizes}
+
+We assume that our hypothesis class $\mathcal{C}$ is the set of all cluster assignments $c : \{1, \ldots, N\} \to \{1, \ldots, K\}$.\todo{Observe that $c$'s domain must be the set of numbers up to $N$ and not an Euclidean domain. Otherwise, the Gibbs distribution is a continuous distribution!} We define then the family of Gibbs distributions
+induced by the $K$-means cost function as all distributions over $\mathcal{C}$ of the
+form
+%
+\begin{equation}
+p(\cdot \mid \theta, X) \propto \exp\left(-\frac{1}{T}R(c, \theta, X)\right).
+\label{eq:gibbs_distr}
+\end{equation}
+%
+Here, $T > 0$ is a hyper-parameter denoting the temperature and $\theta \in \mathbb{R}^{K \times d}$ are parameters denoting the cluster centroids. 
+
+The centroids are chosen to be hyper-parameters just for convenience.
+One could treat them as part of the hypothesis class, but this substantially complicates the analysis.
+
+\begin{theorem}
+A Gibbs distribution induced by the K-means cost function
+factorizes as follows:
+%
+\begin{equation}
+p(c \mid \theta, X) = \prod_{i \leq N} p(c(i) \mid \theta, X),
+\label{eq:gibbs_distr_factorizes}
+\end{equation}
+%
+where
+%
+\begin{equation}
+p(c(i) \mid \theta, X) \propto \exp\left(-\frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right).
+\label{eq:gibbs_factors_da}
+\end{equation}
+%
+\label{thm:gibbs_factorizes}
+\end{theorem}
+
+\begin{proof}
+The Gibbs distribution is
+%
+\begin{equation}
+p(c \mid \theta, X) = \frac{\exp\left(- \frac{1}{T}\sum_{i \leq N}\left\|x_i - \theta_{c(i)}\right\|^2\right)}{\sum_{c \in \mathcal{C}}\exp\left(- \frac{1}{T}\sum_{i \leq N}\left\|x_i - \theta_{c(i)}\right\|^2\right)}.
+\end{equation}
+
+The numerator can be rewritten as follows:
+%
+\begin{equation}
+\exp\left(- \frac{1}{T}\sum_{i \leq N}\left\|x_i - \theta_{c(i)}\right\|^2\right) = \prod_{i \leq N}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right).
+\end{equation}
+
+We now apply the combinatorial trick that we studied in the lecture
+to rewrite the denominator. Unfortunately, I do not see a better way to explain this trick without the diagrams from the lecture.
+%
+\begin{equation}
+\sum_{c \in \mathcal{C}} \exp\left(- \frac{1}{T}\sum_{i \leq N}\left\|x_i - \theta_{c(i)}\right\|^2\right) = \ldots = \prod_{i \leq N} \sum_{k \leq K} \exp\left(-\frac{1}{T}\left\|x_i = \theta_i\right\|^2\right).
+\end{equation}
+
+Putting these results together yields that
+%
+\begin{align}
+p(c \mid \theta, X) &= \frac{\prod_{i \leq N}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)}{\prod_{i \leq N}\sum_{k \leq K}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)}\\
+&= \prod_{i \leq N}\frac{\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)}{\sum_{k \leq K}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)}\\
+&= \prod_{i \leq N}p(c(i) \mid \theta, X).
+\end{align}
+\end{proof} 
+
+Theorem~\ref{thm:gibbs_factorizes} shows that we can compute $p(c \mid \theta, X)$ in just $O(NK)$-time.
+You just have to compute $\exp\left(- \frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)$, which is $O(1)$-time, for $i \leq N$ and $k \leq K$. Hence, computing $p(c(i) \mid \theta, X)$ takes $O(K)$-time, for $i \leq N$, yielding a total computing time of $O(NK)$.
+
+\section{Computing the centroids}
+\label{sec:computing_centroids}
+
+The calculations from the previous section do not tell us the values of the centroids. Remember that we follow the maximum-entropy principle, so
+we compute the centroids that maximize the entropy of $p(\cdot \mid \theta, X)$. In this
+section, we use $C$ to denote a random cluster assignment whose distribution
+is $p(\cdot \mid \theta, X)$.
+
+We assume here that $\mathbb{E}_{C \sum p(\cdot \mid \theta, X)} = \mu$, for some fixed $\mu \in \mathbb{R}^+$ and that the temperature hyper-parameter
+of $p(\cdot \mid \theta, X)$ depends exclusively on $\mu$.
+
+\begin{lemma}
+If, for a set $\theta^*$ of centroids,
+%
+\begin{equation}
+\frac{\partial H \left[p(\cdot \mid \theta, X)\right]}{\partial \theta} \bigr|_{\theta^*} = 0,
+\end{equation}
+%
+then
+%
+\begin{equation}
+\mathbb{E}_{C \sim p(\cdot \mid \theta, X)}\left[\frac{\partial}{\partial \theta}R(C, \theta, X)\bigr|_{\theta^*}\right] = 0.
+\end{equation}
+\label{lem:stationarity_condition}
+\end{lemma}
+
+\begin{proof}
+We leave the proof details as an exercise and provide just a vague
+proof. For convenience, all expectations are with respect to a random cluster assignment $C \sim p(\cdot \mid \theta, X)$.
+
+First, show that
+%
+\begin{equation}
+H\left[p(\cdot \mid \theta, X)\right] = \frac{1}{T}\mathbb{E}\left[R(C, \theta, X)\right] + \mathbb{E}\left[\log \sum_{c \in \mathcal{C}} \exp\left(-\frac{1}{T}R(c, \theta, X)\right)\right].
+\end{equation}
+
+Recall that $\mathbb{E}\left[R(C, \theta, X)\right]$ is fixed to be constant, by construction. Hence,
+the first term on the right-hand side of the equation above is constant with
+respect to $\theta$. Moreover, the second term does not depend on the random variable $C$. We get then that
+%
+\begin{equation}
+H[p(\cdot \mid \theta, X)] = \text{const} + \log \sum_{c \in \mathcal{C}} \exp\left(- \frac{1}{T}R(c, \theta, X)\right).
+\end{equation}
+%
+Take the derivative with respect to on both sides and show that
+%
+\begin{equation}
+\frac{\partial H[p\left(\cdot \mid \theta, X\right)]}{\partial \theta} = \mathbb{E}_{C \sim p(\cdot \mid \theta^*, X)} \left[\frac{\partial}{\partial \theta}R(C, \theta, X)\right].
+\end{equation}
+%
+This equality yields the desired result.
+\end{proof}
+
+For an event $A$, we now denote by $\mathbf{1}{A}$ the indicator function. That is,
+%
+\begin{equation}
+\mathbf{1}{A}(\omega)
+\begin{cases}
+1 & \text{if $\omega \in A$ and}\\
+0 & \text{otherwise}.
+\end{cases}
+\end{equation}
+%
+
+\begin{lemma}
+Let $C$ denote a random cluster assignment and $C(i)$, for $i \leq N$,
+the cluster that $C$ assigns to $x_i$. If $R(\cdot, \cdot, X)$ is the $K$-means cost function, then
+%
+\begin{equation}
+\frac{\partial}{\partial \theta_k} R(C, \theta, X) = 2\theta_k \sum_{i \leq N} \mathbf{1}\left\{C(i) = k\right\} - 2\sum_{i \leq N} x_i \mathbf{1}\left\{C(i) = k\right\}.
+\label{eq:deriv_cost_fun_da}
+\end{equation}
+%
+\end{lemma}
+
+\begin{proof}
+The proof is a straightforward use of vector calculus and is left as
+an exercise.
+\end{proof}
+
+\begin{theorem}
+The set $\theta^*$ of centroids that maximize the entropy of $p(\cdot \mid \theta, X)$ must satisfy the following conditions.
+%
+\begin{equation}
+\theta^*_k = \frac{\sum_{i \leq N} x_i \prob\left(C(i) = k \mid \theta^*, X\right)}{\sum_{i \leq N} \prob\left(C(i) = k \mid \theta^*, X\right)},\text{ for $k \leq K$},
+\label{eq:thm_stationarity_conds_centroids_da}
+\end{equation}
+%
+where
+%
+\begin{equation}
+\prob\left(C(i) = k \mid \theta^*, X\right) \propto \exp\left(- \frac{1}{T}\left\|x_i - \theta^*_k\right\|^2\right).
+\end{equation}
+%
+\end{theorem}
+
+\begin{proof}
+If $\theta^*$ maximizes the entropy of $p(\cdot \mid \theta, X)$, then, by Lemma~\ref{lem:stationarity_condition},
+%
+\begin{equation}
+\mathbb{E}_{C \sim p(\cdot \mid \theta^*, X)}\left[\frac{\partial}{\partial \theta} R(C, \theta, X)\bigr|_{\theta^*}\right] = 0.
+\end{equation}
+
+Plugging Equation~\ref{eq:deriv_cost_fun_da} in the equation above yields that
+%
+\begin{equation}
+\mathbb{E}_{C \sim p(\cdot \mid \theta^*, X)}\left[\theta^*_k \sum_{i \leq N} \mathbf{1}\left\{C(i) = k\right\} - \sum_{i \leq N} x_i \mathbf{1}\left\{C(i) = k\right\}\right] = 0.
+\end{equation}
+%
+Apply now linearity of the expectation and the fact that $\mathbb{E}\left[\mathbf{1}A\right] = \prob\left(A\right)$ to get that
+%
+\begin{equation}
+\theta^*_k \sum_{i \leq N} \prob\left(C(i) = k \mid \theta^*, X\right) - \sum_{i \leq N}x_i \prob\left(C(i) = k \mid \theta^*, X\right) = 0.
+\end{equation}
+
+The desired condition follows from this equation.
+\end{proof}
+
+Unfortunately, Equation~\ref{eq:stationarity_conds_centroids_da} does not give us a closed formula to compute $\theta^*$. We can still attempt to estimate $\theta^*$ iteratively, with the following
+procedure.
+
+\begin{enumerate}
+\item Set $t \gets 0$ and $\theta^*_t$ to an arbitrary value.
+\item Set $t \gets t + 1$ and
+%
+\begin{equation}
+\theta^*_{t+1} \gets \frac{\sum_{i \leq N} \prob\left(C(i) = k \mid \theta^*_t, X\right)x_i}{\prob\left(C(i) = k \mid \theta^*_t, X\right)}.
+\end{equation}
+%
+This procedure converges to a local maximum of $H[p(\cdot \mid \theta, X)]$.
+\end{enumerate}
+
+\begin{exercise}
+Demonstrate that the procedure above also results from applying
+the EM-algorithm to the following maximization problem:
+%
+\begin{equation}
+\max_{\theta} \log \sum_{c \in \mathcal{C}} p(X, c \mid \theta),
+\end{equation}
+%
+where $p(X, c \mid \theta) := p(c \mid \theta, X)p(X)$ and $p(X)$ is the pdf of the phenomenon where $X$ comes from. Use this to demonstrate why the procedure above
+converges.
+\end{exercise}
+
+\section{Deterministic annealing}
+\label{sec:algo_da}
+
+We now collect all insights from this chapter and use them to propose
+an improved version of simulated annealing, called \emph{deterministic annealing}.
+Algorithm~\ref{algo:da_algo_da} provides the details. The idea of this procedure is the
+following.
+
+\begin{enumerate}
+\item We set a high value for the temperature and start with arbitrary
+centroids.
+\item \label{step:em_alternation} We alternate between (i) computing the maximum-entropy distribution
+for a random cluster assignment while fixing the centroids
+and (ii) computing the centroids that maximize the entropy of that
+distribution. This alternation is repeated until convergence of the
+centroids.
+\item We reduce the temperature and repeat Step~\ref{step:em_alternation}. To avoid having repeated
+centroids, we add a small amount of noise.
+\end{enumerate}
+
+We remark some differences between deterministic annealing and simulated
+annealing:
+
+\begin{itemize}
+\item There is no MCMC sampling. This is because the Gibbs distribution
+induced by the $K$-means cost is tractable. So we can just compute it
+directly.
+\item The centroids are treated as parameters of the Gibbs distribution
+and not as part of the hypothesis class. This is done mainly for
+convenience. A Gibbs distribution that also treats the centroids as
+random variables makes the whole procedure intractable.
+\end{itemize}
+
+\section{Experimental results}
+\label{sec:experiments}
+
+\section{Phase transitions}
+\label{sec:phase_trans}
+
+\section{Deterministic annealing and posterior agreement}
+\label{sec:da_pa}

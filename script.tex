@@ -1,0 +1,38 @@
+\title{Statistical learning theory}
+\author{
+        Carlos Cotrini \\
+                Department of Computer Science\\
+        ETH Z\"urich\\
+        Switzerland
+}
+\date{\today}
+
+\documentclass[12pt]{book}
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{color}
+
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{exercise}{Exercise}
+\newtheorem{lemma}{Lemma}
+\newtheorem{conjecture}{Conjecture}
+
+\begin{document}
+\maketitle
+
+\newcommand{\todo}[1]{{\color{red} ToDo: #1}}
+\newcommand{\prob}{\mathbf{P}}
+
+\newcommand{\dir}{deterministic_annealing}
+\input{\dir/deterministic_annealing.tex}
+
+\bibliographystyle{abbrv}
+\bibliography{main}
+
+\end{document}
+This is never printed
