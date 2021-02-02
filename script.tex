@@ -12,15 +12,29 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{subcaption}
+\usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{color}
+\usepackage[margin=1.5in]{geometry}
+\usepackage{tabulary}
 
 \newtheorem{definition}{Definition}
 \newtheorem{theorem}[definition]{Theorem}
 \newtheorem{exercise}{Exercise}
+\newtheorem{example}{Example}
+\newtheorem{assumption}{Assumption}
 \newtheorem{lemma}{Lemma}
 \newtheorem{conjecture}{Conjecture}
+\newtheorem{requirement}{Requirement}
+
+\theoremstyle{definition}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
 
 \begin{document}
 \maketitle
@@ -28,11 +42,22 @@
 \newcommand{\todo}[1]{{\color{red} ToDo: #1}}
 \newcommand{\prob}{\mathbf{P}}
 
-\newcommand{\dir}{deterministic_annealing}
+\newcommand{\dir}{maximum_entropy_posterior_agreement}
+\input{\dir/maximum_entropy_posterior_agreement.tex}
+
+\renewcommand{\dir}{deterministic_annealing}
 \input{\dir/deterministic_annealing.tex}
+
+\renewcommand{\dir}{posterior_agreement}
+\input{\dir/posterior_agreement.tex}
 
 \bibliographystyle{abbrv}
 \bibliography{main}
+
+\appendix
+
+\renewcommand{\dir}{em_algorithm}
+\input{\dir/em_algorithm.tex}
 
 \end{document}
 This is never printed

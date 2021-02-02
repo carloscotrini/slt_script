@@ -6,7 +6,7 @@ ing}
 
 In this chapter, we consider the problem of centroid-based clustering. In
 this problem, an observation is a sample $X = \{x_1, \ldots, x_N\} \subseteq \mathbb{R}^d$ of points
-and our objective is to compute a set $\{\theta_1, \ldots, \theta_K\} \subseteq \mathbb{R}^d$ of $K$ centroids and a cluster assignment function $c : \mathbb{R}^d \to \{1, \ldots, K\}$, where $K \in \mathbb{N}$ is a hyperparameter.
+and our objective is to compute a set $\{\theta_1, \ldots, \theta_K\} \subseteq \mathbb{R}^d$ of $K$ centroids and a \emph{cluster assignment} function $c : \{1, \ldots, N\} \to \{1, \ldots, K\}$, where $K \in \mathbb{N}$ is a hyperparameter.
 We let the hypothesis class $\mathcal{C}$ be all possible cluster assignment functions with fixed $K$.
 
 As cost function, we choose the $K$-means cost function:
@@ -308,11 +308,130 @@ convenience. A Gibbs distribution that also treats the centroids as
 random variables makes the whole procedure intractable.
 \end{itemize}
 
+\begin{algorithm}
+\begin{algorithmic}[1]
+\State Let
+\State \qquad $\epsilon > 0$ be a temperature threshold,
+\State \qquad $\texttt{reduce}(\cdot)$ be a function for decreasing the temperature.
+\State \qquad $\texttt{close}\left(\cdot, \cdot\right)$ be a function that evaluates if two matrices are close.
+\Function{DetAnn}{$\epsilon$, \texttt{reduce}, \texttt{close}}
+\State $T \gets \infty$ \Comment{$\infty$ is a sufficiently large value.}
+\State $\theta \gets \$$ \Comment{Define arbitrary initial centroids.}
+\While{$T > \epsilon$}
+\Repeat
+\State $\theta_0 \gets \theta$
+\State Compute $\prob\left(C(i) = k \mid \theta_0, X\right)$, for $i \leq N$ and $k \leq K$
+\State $\displaystyle \theta \gets \frac{\sum_{i \leq N} \prob\left(C(i) = k \mid \theta_0, X\right) x_i}{\sum_{i \leq N} \prob\left(C(i) = k \mid \theta_0, X\right)}$
+\Until{$\texttt{close}\left(\theta, \theta_0\right)$}
+\State Add a small amount of noise to each centroid in $\theta$.
+\State $T \gets \texttt{reduce}(T)$
+\EndWhile
+\State \textbf{return} $\theta$, $\{\prob\left(C(i) = k \mid \theta, X\right) \mid i \leq N, k \leq K\}$
+\EndFunction
+\end{algorithmic}
+\caption{Deterministic annealing}
+\end{algorithm}
+
 \section{Experimental results}
 \label{sec:experiments}
 
+Figure~\ref{fig:da_vs_kmeans}, from Rose~\cite{rose1991deterministic, rose1998deterministic}, compares deterministic annealing with $K$-means
+on a particular dataset $X$ which is a sample from a mixture of six Gaussians
+with different means and different covariance matrices. $K$-means depends
+on the initialization, so it was run 25 times. The result shown in the
+figure was obtained only once, and in more than 80\% of the runs, $K$-
+means was stuck in a local minimum. In contrast, deterministic annealing
+is independent of the initialization and finds the global minimum more
+often than $K$-means. For both $K$-means and deterministic annealing, 6
+centroids were used.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{\dir/k_means_6}
+        \caption{$K$-means}
+        \label{fig:k_means_6}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{\dir/da_6}
+        \caption{Deterministic annealing}
+        \label{fig:da_6}
+    \end{subfigure}
+    \caption{Comparison of (a) $K$-means and (b) deterministic annealing. The $\times$ marks are the means of the Gaussian components. The $\bigcirc$ marks are the centroids computed by the algorithm.}\label{fig:da_vs_k_means}
+\end{figure}
+
 \section{Phase transitions}
 \label{sec:phase_trans}
+
+We now study the behavior of the centroids as the temperature decreases.
+We will see that, at the beginning when the temperature is high, all centroids
+are equal to the sample mean. As a result one can assume that there
+is only one cluster. As the temperature decreases, this cluster eventually decomposes into a few clusters, which continue decomposing into more clusters as the temperature keeps decreasing.
+
+Figure~\ref{fig:da_phase_trans}, from Rose~\cite{rose1998deterministic}, illustrates this behavior. The four subfigures show the centroids ($\times$ marks) at four different points of the execution of
+deterministic annealing with 9 centroids. Here, $X$ is a sample from a mixture of 9 Gaussians.
+The subfigures are sorted by decreasing temperature. The curves in the graphic represent points that have all the same probability of belonging to one particular cluster. Observe how the apparent number of centroids change as the temperature
+decreases. In Figure~\ref{fig:da_high_temp}, there seems to be only three centroids,
+but what actually happens is that some of the 9 centroids are very close to
+each other. Figure~\ref{fig:da_mid1_temp} shows the centroids after the temperature has decreased.
+There seems to be now 5 centroids. In Figure~\ref{fig:da_mid2_temp} we have a lower
+temperature and now 7 apparent centroids. Finally, in Figure~\ref{fig:da_low_temp}, all 9
+centroids are at different locations and close to the means of the Gaussian
+mixture.
+We now investigate this behavior analytically. We do this through a
+sequence of lemmas whose proofs are left as exercises.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{\dir/da_high_temp}
+        \caption{}
+        \label{fig:da_high_temp}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{\dir/da_mid1_temp}
+        \caption{}
+        \label{fig:da_mid1_temp}
+    \end{subfigure}
+    
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{\dir/da_mid2_temp}
+        \caption{}
+        \label{fig:da_mid2_temp}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{\dir/da_low_temp}
+        \caption{}
+        \label{fig:da_low_temp}
+    \end{subfigure}
+    \caption{}\label{fig:da_phase_trans}
+\end{figure}
+
+\subsection{There is only one cluster at a high temperature}
+
+\begin{lemma}
+\begin{equation}
+\lim_{T \to \infty} \prob\left(C(i) = k \mid \theta, X\right) = \frac{1}{K}.
+\end{equation}
+
+\begin{equation}
+\lim_{T \to 0} \prob\left(C(i) = k \mid \theta, X\right) = \begin{cases}
+1 & \text{ if $\theta_k$ is the centroid closest to $x_k$ and}\\
+0 & \text{ otherwise}.
+\end{cases}
+\end{equation}
+\label{lem:da_extreme_temps}
+\end{lemma}
+
+\begin{proof}
+This is a consequence of Exercise
+\end{proof}
 
 \section{Deterministic annealing and posterior agreement}
 \label{sec:da_pa}
