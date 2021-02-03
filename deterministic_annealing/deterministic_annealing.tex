@@ -146,13 +146,13 @@ of $p(\cdot \mid \theta, X)$ depends exclusively on $\mu$.
 If, for a set $\theta^*$ of centroids,
 %
 \begin{equation}
-\frac{\partial H \left[p(\cdot \mid \theta, X)\right]}{\partial \theta} \bigr|_{\theta^*} = 0,
+\frac{\partial H \left[p(\cdot \mid \theta, X)\right]}{\partial \theta} \Bigr|_{\theta^*} = 0,
 \end{equation}
 %
 then
 %
 \begin{equation}
-\mathbb{E}_{C \sim p(\cdot \mid \theta, X)}\left[\frac{\partial}{\partial \theta}R(C, \theta, X)\bigr|_{\theta^*}\right] = 0.
+\mathbb{E}_{C \sim p(\cdot \mid \theta, X)}\left[\frac{\partial}{\partial \theta}R(C, \theta, X)\Bigr|_{\theta^*}\right] = 0.
 \end{equation}
 \label{lem:stationarity_condition}
 \end{lemma}
@@ -231,7 +231,7 @@ where
 If $\theta^*$ maximizes the entropy of $p(\cdot \mid \theta, X)$, then, by Lemma~\ref{lem:stationarity_condition},
 %
 \begin{equation}
-\mathbb{E}_{C \sim p(\cdot \mid \theta^*, X)}\left[\frac{\partial}{\partial \theta} R(C, \theta, X)\bigr|_{\theta^*}\right] = 0.
+\mathbb{E}_{C \sim p(\cdot \mid \theta^*, X)}\left[\frac{\partial}{\partial \theta} R(C, \theta, X)\Bigr|_{\theta^*}\right] = 0.
 \end{equation}
 
 Plugging Equation~\ref{eq:deriv_cost_fun_da} in the equation above yields that
@@ -330,6 +330,7 @@ random variables makes the whole procedure intractable.
 \EndFunction
 \end{algorithmic}
 \caption{Deterministic annealing}
+\label{algo:da_algo_da}
 \end{algorithm}
 
 \section{Experimental results}
@@ -430,8 +431,227 @@ sequence of lemmas whose proofs are left as exercises.
 \end{lemma}
 
 \begin{proof}
-This is a consequence of Exercise
+This is a consequence of Exercise~\ref{ex:gibbs_dist_extreme_temps}.
 \end{proof}
+
+\begin{lemma}
+For $R(\cdot, \theta, X)$, the $K$-means cost function, maximizing $H[p(\cdot \mid \theta, X)]$ with respect to $\theta$ is equivalent to minimizing
+%
+\begin{equation}
+\mathcal{F}(\theta, X) := -T \sum_{i \leq N}\log \left(\sum_{k \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)\right).
+\label{eq:gibbs_free_energy_da}
+\end{equation}
+%
+\label{lem:max_ent_is_min_free_energy_da}
+\end{lemma}
+
+\begin{proof}
+The proof is similar to that of Lemma~\ref{lem:stationarity_condition} and involves Theorem~\ref{thm:gibbs_factorizes}.
+\end{proof}
+
+$\mathcal{F}\left(\theta, X\right)$ is called \emph{the Gibbs free energy (induced by $R(\cdot, \theta, X)$)}.
+
+\begin{theorem}
+At $T = 2\lambda$, there is a transition from one to several clusters, where $\lambda$ is the maximum eigenvalue of the sample covariance matrix of $X$. This is the matrix $\frac{1}{n}XX^\top$, where $X$ is seen as a matrix whose columns are all points in the observation.
+\label{thm:critical_temp_da}
+\end{theorem}
+
+The rest of this section is devoted to prove lemmas that will help prove
+this theorem.
+
+Without loss of generality, we assume that $\theta^\infty = 0$. Observe that
+when T is sufficiently high, the Hessian $H$ of $\mathcal{F}$ evaluated at $\theta^\infty$ is positive
+definite. So new clusters arise when $H$ is no longer positive definite. Our plan is to demonstrate that $H$ stops being positive definite when $T = \frac{1}{2\lambda}$.
+
+The Hessian $H$ can be seen as a block matrix where each block is the
+Hessian matrix:
+%
+\begin{equation}
+\frac{\partial F}{\partial \theta_\ell \partial \theta_k}\Bigr|_{\theta^\infty} = 
+\left(
+\begin{array}{ccc}
+\displaystyle
+\frac{\partial F}{\partial \theta_{\ell 1} \partial \theta_{k 1}}\Bigr|_{\theta^\infty} & \ldots & \displaystyle\frac{\partial F}{\partial \theta_{\ell 1} \partial \theta_{k d}}\Bigr|_{\theta^\infty}\\
+\vdots & \ddots & \vdots\\
+\displaystyle\frac{\partial F}{\partial \theta_{\ell d} \partial \theta_{k 1}}\Bigr|_{\theta^\infty} & \ldots & \displaystyle\frac{\partial F}{\partial \theta_{\ell d} \partial \theta_{k d}}\Bigr|_{\theta^\infty}
+\end{array}
+\right).
+\end{equation}
+%
+From now on, we restrict the domain of $\frac{\partial F}{\partial \theta_\ell \partial \theta_k}$ to a ball $\mathcal{B}$ centered at the origin with a sufficiently small radius so that $\theta_k^\top \theta_\ell$ is insignificant, for every $k, \ell \leq K$. In particular, $\theta_{km}\theta_{\ell m'}$ is insignificant, for every $k, \ell \leq K$ and every $m, m' \leq d$.
+
+\begin{lemma}
+Inside $\mathcal{B}$,
+%
+\begin{equation}
+\frac{\partial F}{\partial \theta_k} \approx -\frac{2}{T}\sum_{i \leq N} \frac{A_{ik}}{B_i},
+\end{equation}
+%
+where
+%
+\begin{equation}
+A_{ik} = (x_i - \theta_k)\left(1 + \frac{2}{T}x_i^\top \theta_i\right) \qquad \text{and} \qquad B_i = \sum_{k' \leq K}\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right).
+\end{equation}
+%
+\label{lem:approx_deriv}
+\end{lemma}
+
+\begin{proof}
+Start from
+%
+\begin{equation}
+\frac{\partial F}{\partial \theta_k} = - \frac{2}{T} \sum_{i \leq N} \prob\left(C(i) = k \mid \theta, X\right)(x_i - \theta_k).
+\label{eq:start_eq_da}
+\end{equation}
+%
+Observe that, inside $\mathcal{B}$,
+%
+\begin{equation}
+\left\|x_i - \theta_k\right\|^2 = \left\|x_i\right\|^2 - 2x_i^\top\theta_k + \left\|\theta_k\right\|^2 \approx \left\|x_i\right\|^2 - 2x_i^\top \theta_k.
+\end{equation}
+%
+Hence,
+%
+\begin{align}
+\exp\left(- \frac{1}{T}\left\|x_i - \theta_k\right\|^2\right) &\approx \exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\exp\left(\frac{2}{T}x_i^\top \theta_k\right)\\
+&\approx \exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_k\right).\\
+\end{align}
+%
+Therefore,
+%
+\begin{align}
+\prob\left(C(i) = k \mid \theta, X\right) &= \frac{\exp\left(-\frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{k'}\right\|^2\right)}\\
+&\approx \frac{\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_k\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}\\
+&= \frac{\left(1 + \frac{2}{T}x_i^\top \theta_{k}\right)}{\sum_{k' \leq K}\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}.\label{eq:simplified_factor_prob}
+\end{align}
+%
+The result follows from plugging (\ref{eq:simplified_factor_prob}) in Equation~(\ref{eq:start_eq_da}).
+\end{proof}
+
+\begin{lemma}
+\begin{equation}
+\frac{\partial F}{\partial \theta_\ell \partial \theta_k}\Bigr|_{\theta^\infty} = \underbrace{\frac{2N}{K}\mathbb{I}\left\{\ell = k\right\}\left(I - \frac{2}{TN}XX^\top\right)}_{P} + \underbrace{\frac{2}{K^2}XX^\top.}_Q
+\end{equation}
+Here, $\mathbb{I}\left\{\ell = k\right\}$ is the identity matrix when $\ell = k$ and the zero matrix otherwise.
+\end{lemma}
+
+\begin{proof}
+For $m, m' \leq d$, apply the quotient rule to show that
+%
+\begin{equation}
+\frac{\partial F}{\partial \theta_{\ell m'} \partial \theta_{k m}}\Bigr|_{\theta^\infty}
+=
+-2\sum_{i \leq N}\left(\frac{1}{B_i}\Bigr|\frac{\partial A_{ikm}}{\partial \theta_{\ell m'}}\Bigr|_{\theta^\infty}\right) + 2 \sum_{i \leq N} \frac{A_{ikm}\Bigr|_{\theta^\infty}}{\left(B_i \Bigr|_{\theta^\infty}\right)^2}\left(\frac{\partial B_i}{\partial \theta_{\ell m'}}\Bigr|_{\theta^\infty}\right).
+\end{equation}
+%
+Observe now that
+%
+\begin{equation}
+A_{ik}\Bigr|_{\theta^\infty} = x_i, \quad B_i \Bigr|_{\theta^\infty} = K, \quad \text{and} \quad \frac{\partial B_i}{\partial \theta_\ell}\Bigr|_{\theta^\infty} = x_i.
+\end{equation}
+%
+Therefore,
+%
+\begin{equation}
+\frac{\partial F}{\partial \theta_{\ell} \partial \theta_{k}}\Bigr|_{\theta^\infty}
+= - \frac{2}{K}\left(\frac{\partial}{\partial \theta_\ell}\sum_{i \leq N}A_{ik}\right)\Bigr|_{\theta^\infty} + \frac{2}{K^2}\sum_{i \leq N}x_i x_i^\top.
+\label{eq:estimate_hessian_da}
+\end{equation}
+%
+Show now that
+%
+\begin{equation}
+\sum_{i \leq N}A_{ik} = \left(\frac{2}{T}XX^\top - NI\right)\theta_k.
+\end{equation}
+%
+This implies that
+%
+\begin{equation}
+\left(\frac{\partial}{\partial \theta_\ell}\sum_{i \leq N}A_{ik}\right)\Bigr|_{\theta^\infty} = N\mathbb{I}\left\{\ell = k\right\}\left(\frac{2}{TN}XX^\top - I\right).
+\end{equation}
+%
+Plugging this into Equation~\ref{eq:estimate_hessian_da} yields the desired result.
+\end{proof}
+
+Observe that, with high probability, $Q$ is positive semi-definite.
+
+\begin{lemma}
+Let $Q$ be a positive semi-definite matrix. Let $H$ be a block
+matrix where the block $(i,j)$ is given by
+%
+\begin{equation}
+H[i,j] = \mathbb{I}\left\{\ell = k\right\} P + Q.
+\end{equation}
+%
+Then $H$ is positive-definite iff $P$ is.
+\label{lem:aux_lemma_ross}
+\end{lemma}
+
+\begin{proof}
+See Ross's doctoral thesis~\ref{ross1991deterministic}.
+\end{proof}
+
+We now prove Theorem~\ref{thm:critical_temp_da}. Recall that the temperature at which $\theta^\infty$ stops being the unique minimum is the temperature at which the Hessian matrix $H$ evaluated at $\theta^\infty$ stops begin positive definite. By Lemma~\ref{lem:aux_lemma_ross}, this occurs when 
+%
+\begin{equation}
+P = I - \frac{2}{TN}XX^\top
+\end{equation}
+%
+is no longer positive definite, which occurs when
+%
+\begin{equation}
+0 = \left|I - \frac{2}{TN}XX^\top\right| = \left|\frac{T}{2}I - \frac{1}{N}XX^\top\right|.
+\end{equation}
+%
+That is, when $T/2$ is an eigenvalue of $\frac{1}{N}XX^\top$. Since $R$ starts at a very
+large value and is gradually decreased, we conclude that the temperature at
+which more clusters appear is at $T = 2\lambda$ where $\lambda$ is the largest eigenvalue of $\frac{1}{N}XX^\top$. This concludes the proof.
 
 \section{Deterministic annealing and posterior agreement}
 \label{sec:da_pa}
+
+There is still an open question regarding deterministic annealing. What
+is the number of clusters that we should use? More generally, at which
+temperature we should stop the execution of deterministic annealing? The
+posterior agreement principle recommends to have two observations $X'$ and
+$X''$ and compute the temperature that maximizes the posterior agreement
+kernel
+%
+\begin{equation}
+\kappa(X', X'') = \sum_c p(c \mid X') p(c \mid X'').
+\end{equation}
+%
+Observe that for the two probabilities to make sense, we must have $X' = \{x'_1, \ldots, x'_M\}$ and $X'' = \{x''_1, \ldots, x''_N\}$ of equal size. We assume from
+now on that this is the case. Furthermore, we assume that $x'_i$ and $x''_i$, for $i \leq N$, are
+two observations of one same object. The more general scenario is studied
+by Buhmann~\cite{buhmann2010information}.
+
+An analytical method to maximize $\kappa(X', X'')$ with respect to the temperature
+is unknown. Moreover, the posterior agreement kernel seems to
+be computationally intractable, as it is a sum over $K^N$ objects. Fortunately,
+the factorization of the Gibbs distribution makes it computationally
+tractable.
+
+\begin{exercise}
+Show that
+%
+\begin{equation}
+\sum_{c}p(c \mid X') p(c \mid X'') = \prod_{i \leq N}\sum_{k \leq K}\prob\left(C(i) = k \mid X'\right)\prob\left(C(i) = k \mid X''\right).
+\end{equation}
+%
+Show also that computing this takes $O(NK)$-time.
+\end{exercise}
+
+Our plan is then to select a set of candidate temperatures and pick the
+one with the highest $\kappa(X', X'')$ as the stopping temperature. We can implement
+this plan during the execution of deterministic annealing. Observe
+that the while loop of of Algorithm~\ref{algo:da_algo_da} gives as a sequence of decreasing
+temperatures. Therefore, we can compute $\kappa(X', X'')$ at each iteration
+with the current temperature. We can keep track of these kernel values.
+The value of $\kappa(X', X'')$ has been observed empirically to be low when the
+temperature is high, then it increases as the temperature is lowered, and
+eventually it starts decreasing. Hence, we can keep track of how the kernel
+values change as deterministic annealing decreases the temperature. After
+observing, for a certain amount of iterations, that $\kappa(X', X'')$ is no longer
+increasing and starts decreasing, we can stop the annealing and choose as
+stopping temperature the one that yielded the largest $\kappa(X', X'')$.
