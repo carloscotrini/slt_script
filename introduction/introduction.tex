@@ -1,0 +1,126 @@
+\chapter*{Introduction}
+
+These is a script for the course statistical learning theory at ETH. In this introduction, we explain what statistical learning is about and what you will learn in this course.
+
+\section*{What is learning?}
+
+Let us consider a fictitious scenario. You are given a handful of patients
+in a hospital. Some of which have been diagnosed with pneumonia. Each
+patient is represented as a sequence of values, where each value describes a
+relevant property of the patient, like the body temperature or the number
+of days for which the patient has been coughing.
+
+With enough training and discipline, you can start to recognize patterns
+among these patients. For example, patients with a high temperature and
+who have been coughing for long are likely to have pneumonia. We can call this pattern a \emph{model} of reality. The process by which a human constructs a model can be called (human) \emph{learning}.
+
+It has been demonstrated that machines can perform a process very
+similar to human learning. One can design an algorithm that takes as
+input patient representations and produces from them a (mathematical) \emph{model} that can
+effectively diagnose pneumonia on patients that were not part of the initial
+set of patients. We can call this process \emph{machine learning}. The act of
+computing the model is called \emph{training.}
+
+\section*{What is statistical learning}
+
+\emph{Statistical learning} is a subfield of machine learning where the algorithm
+trains models by directly minimizing a notion of cost.
+
+A popular method of statistical learning is \emph{empirical risk minimization.}
+In this method, we first define a \emph{cost function} $R$ that measures (i) the
+cost of misdiagnosing pneumonia and (ii) the cost of failing to diagnose
+pneumonia. Observe that the two costs may not necessarily be the same.
+A simple probabilistic argument shows that to minimize costs in the
+long run, the computer program should train a model that minimizes \emph{the
+expected cost}. This is defined as the expected value $\mathbb{E}_X\left[R(c, X)\right]$ of $R(c,X)$,
+where $R(c, X)$ indicates the cost that model $c$ incurs when analyzing a
+random patient $X$.
+The expected cost is often impossible to evaluate, because we cannot
+access the distribution of $X$. So we instead minimize an empirical estimate, called the \emph{empirical cost}, using a sample $X_1, \ldots, X_N$ from $X$'s distribution. In our context, this sample is the set of patients that we use
+to build our model.
+
+Empirical risk minimization advocates then to design algorithms that
+output models $c^*$ that minimize
+%
+\begin{equation}
+\frac{1}{N}\sum_{i \leq N}R(c, X_i).
+\end{equation}
+%
+\emph{Statistical learning theory} is the study of algorithms that train models
+via empirical risk minimization.
+
+\section*{What will you learn in this course?}
+
+This is a course that studies and proposes methods for statistical learning.
+Some of the ideas proposed here are intended to establish an \emph{information
+theory of algorithms}, where algorithms can be seen as communication
+channels. An algorithm takes as input a random variable, representing a
+training set, and outputs a random variable, representing a model.
+
+This representation implies that when given as input a training
+set, the algorithm produces a \emph{posterior distribution} over a set of possible
+models. A fundamental question is then \emph{how do we validate that the
+algorithm is producing the output that we desire?}
+
+This course proposes answers to this question. Along the way, you will
+learn the following:
+
+\begin{itemize}
+\item How to design probability distributions over hypothesis classes.
+\item Statistical learning requires an approach of score maximization rather
+than an approach of cost minimization.
+\item The concept of entropy plays a key role when defining a notion of
+algorithm validation.
+\end{itemize}
+
+\section*{Outline}
+
+The course starts in the middle of February with an introduction to statistical
+learning. Afterwards, in March, we propose a new methodology,
+called \emph{maximum entropy and posterior agreement} to design and validate
+algorithms for statistical learning. We study some instantiations of maximum
+entropy in the case of clustering. In April, we study other approaches
+for clustering and show their connection to maximum entropy. In May, we
+study some popular techniques for approximating intractable distributions that arise when following the maximum-entropy approach. Finally, we propose
+information-theoretic foundations for posterior agreement.
+
+%This is a \emph{theoretical}\footnote{Actually, if you are from math or physics, this is an applied course. The thing is that our target audience are computer scientists.} course. 
+The course is not for the fainthearted. In addition to the lectures, there are coding exercises that are time demanding. The exercises and the exam ask you to do proofs and do math at a graduate level. We use variational and matrix calculus, multivariate probability theory, and information theory to demonstrate theoretical results. If you are not familiar with some of these subjects, this is fine\footnote{For SLT 2020, we had a bachelor student who did not have previous exposure to data science and still passed the course with the highest grade among all 70 students who managed to finish, so it is possible to take the course with no knowledge of these subjects. However, the student devoted a huge amount of time for this course.}, but you are expected to learn from these subjects on your own.
+
+The notes are planned to be completed throughout the next years. For
+this year, you can expect notes presenting maximum entropy and posterior
+agreement.
+
+\section*{Acknowledgements and contributions}
+
+This script is a remake of a previous script that was maintained by former
+members of the institute of machine learning at ETH: Alexey Gronskiy,
+Sergio Sol\'orzano, Francesco Locatello, and David Tedaldi. This new version
+contains the following contributions:
+
+\begin{itemize}
+\item An earlier introduction to posterior agreeement.
+\item A new toy problem, the random array problem, which illustrates
+the effectiveness of maximum entropy and posterior agreement over
+empirical risk minimization.
+\item A new relation between the holdout and posterior agreement, discovered
+by Buhmann.
+\item Calculations and experiments by Kenneth Rose~\cite{rose1991deterministic, rose1998deterministic} on deterministic
+annealing.
+\item An analysis by Rose on the temperatures at which phase transitions
+occur in deterministic annealing.
+\item A presentation of the Laplace method and its application for least-angle
+clustering, proposed by Buhmann.
+\item A new chapter discussing how to explore Gibbs distributions via sampling.
+\item An alternative information-theoretic movitation for posterior agreement,
+including a detailed recap on Shannon's channel coding theorem.
+\end{itemize}
+
+\section*{Remarks}
+
+This is the first draft of this new version of the script. Therefore, you
+are kindly asked to be patient to typos and terse explanations. This does
+not mean, however, that you have to deal with them. You are warmly
+encouraged to report in Piazza typos that you encounter and ask whenever
+some part is unclear to you. I'd be very happy to discuss them with you
+and decide how to improve the script.

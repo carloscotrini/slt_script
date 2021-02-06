@@ -1,0 +1,19 @@
+\chapter{Pairwise clustering}
+
+\epigraph{I wonder. Will it be as marvellous to you as it is to me? Do you really care as much as I do?}{Jacqueline to Simon, Death on the Nile}
+
+In her landmark work, \emph{the anatomy of love}, Helen Fisher\footnote{Not to be confused with Helene Fischer.} analyzed almost 40,000 users of chemistry.com, a subsidiary dating website of match.com. She gave each user a 56-item questionnaire that assesses how a person interacts with a romantic partner. After analyzing her responses, she observed four clusters, and proposed what she called \emph{the four love personalities}, which she argues are connected to the levels of four different hormones: dopamine, serotonine, testosterone, and estrogen. Furthermore, her studies show that some pairs of personalities have a better romantic prospect than others.
+
+One interesting thing about this study is that this clustering was built on something as underspecified as romantic relationships. This study opens some questions: how can we build an accurate yet analytically tractable representation of a person as a romantic entity? How can we quantify the ``distance'' or the ``similarity'' between two people in this context?
+
+The last question deserves some special attention. Distance and similarity have always been understood as something symmetric. The distance from Zurich to Bern is equal to the distance from Bern to Zurich. How similar a mother looks to her daughter is the same as how similar that daugther looks to her mother. However, this is not true for romantic interactions, as Jacqueline realized in Chapter 2 of Agatha Christie's \textit{Death on the Nile} (she was engaged to Simon Doyle, who suddenly left her after falling in love with her best friend). Indeed, Fisher reports that 95\% of college students have been rejected by someone they loved and also have rejected someone who loved them.
+
+We can then formalize this setting as a weighted directed graph whose vertices represent people. The weight of an edge from person $A$ to person $B$ quantifies how much $A$ likes $B$. We can assume this weight to be defined by $A$ and require it to be in a scale from 1 to 5. Observe then that there are two edges between $A$ and $B$. The problem is then how we can cluster
+
+These asymmetric interactions occur often in life. Here are some examples:
+
+\carlos{To be continued...}
+
+\section{Formalization}
+
+Assume given a \emph{similarity matrix} $X \in \mathbb{R}^{N \times N}$, where $X_{ij}$ quantifies how much an subject $i$ wants to be in the same cluster as subject $j$. We \emph{do not assume} $X$ to be symmetric. Our goal is to compute a cluster assignment function $c : \{1, \ldots, N\} \to \{1, \ldots, \}$ \carlos{To be continued...}
