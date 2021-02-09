@@ -64,7 +64,7 @@ at a sufficiently low temperature, each point becomes its own cluster.
 Finally, in Section~\ref{sec:da_pa}, we exploit this behavior and posterior agreement to determine the number of clusters while executing deterministic annealing. This yields an extra advantage of deterministic annealing over other standard clustering methods like $K$-means which demand to set the number of clusters in advance.
 
 \section{Tractability of the Gibbs distribution}
-\label{sec:gibbs_factorizes}
+\label{sec:gibbs_factorizes_da}
 
 We assume that our hypothesis class $\mathcal{C}$ is the set of all cluster assignments $c : \{1, \ldots, N\} \to \{1, \ldots, K\}$.\todo{Observe that $c$'s domain must be the set of numbers up to $N$ and not an Euclidean domain. Otherwise, the Gibbs distribution is a continuous distribution!} We define then the family of Gibbs distributions
 induced by the $K$-means cost function as all distributions over $\mathcal{C}$ of the
@@ -132,7 +132,7 @@ Theorem~\ref{thm:gibbs_factorizes} shows that we can compute $p(c \mid \theta, X
 You just have to compute $\exp\left(- \frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)$, which is $O(1)$-time, for $i \leq N$ and $k \leq K$. Hence, computing $p(c(i) \mid \theta, X)$ takes $O(K)$-time, for $i \leq N$, yielding a total computing time of $O(NK)$.
 
 \section{Computing the centroids}
-\label{sec:computing_centroids}
+\label{sec:computing_centroids_da}
 
 The calculations from the previous section do not tell us the values of the centroids. Remember that we follow the maximum-entropy principle, so
 we compute the centroids that maximize the entropy of $p(\cdot \mid \theta, X)$. In this
@@ -249,7 +249,7 @@ Apply now linearity of the expectation and the fact that $\mathbb{E}\left[\mathb
 The desired condition follows from this equation.
 \end{proof}
 
-Unfortunately, Equation~\ref{eq:stationarity_conds_centroids_da} does not give us a closed formula to compute $\theta^*$. We can still attempt to estimate $\theta^*$ iteratively, with the following
+Unfortunately, Equation~\ref{eq:thm_stationarity_conds_centroids_da} does not give us a closed formula to compute $\theta^*$. We can still attempt to estimate $\theta^*$ iteratively, with the following
 procedure.
 
 \begin{enumerate}
@@ -360,11 +360,12 @@ centroids were used.
         \caption{Deterministic annealing}
         \label{fig:da_6}
     \end{subfigure}
-    \caption{Comparison of (a) $K$-means and (b) deterministic annealing. The $\times$ marks are the means of the Gaussian components. The $\bigcirc$ marks are the centroids computed by the algorithm.}\label{fig:da_vs_k_means}
+    \caption{Comparison of (a) $K$-means and (b) deterministic annealing. The $\times$ marks are the means of the Gaussian components. The $\bigcirc$ marks are the centroids computed by the algorithm.}
+    \label{fig:da_vs_kmeans}
 \end{figure}
 
 \section{Phase transitions}
-\label{sec:phase_trans}
+\label{sec:phase_transition}
 
 We now study the behavior of the centroids as the temperature decreases.
 We will see that, at the beginning when the temperature is high, all centroids
@@ -588,7 +589,7 @@ Then $H$ is positive-definite iff $P$ is.
 \end{lemma}
 
 \begin{proof}
-See Ross's doctoral thesis~\ref{ross1991deterministic}.
+See Rose's doctoral thesis~\cite{rose1991deterministic}.
 \end{proof}
 
 We now prove Theorem~\ref{thm:critical_temp_da}. Recall that the temperature at which $\theta^\infty$ stops being the unique minimum is the temperature at which the Hessian matrix $H$ evaluated at $\theta^\infty$ stops begin positive definite. By Lemma~\ref{lem:aux_lemma_ross}, this occurs when 

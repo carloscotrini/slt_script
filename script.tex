@@ -14,6 +14,7 @@
 \usepackage{amssymb}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{epigraph}
 \usepackage{subcaption}
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -44,7 +45,10 @@
 \newcommand{\todo}[1]{{\color{red} ToDo: #1}}
 \newcommand{\prob}{\mathbf{P}}
 
-\newcommand{\dir}{maximum_entropy_posterior_agreement}
+\newcommand{\dir}{Introduction}
+\input{\dir/introduction.tex}
+
+\renewcommand{\dir}{maximum_entropy_posterior_agreement}
 \input{\dir/maximum_entropy_posterior_agreement.tex}
 
 \renewcommand{\dir}{simulated_annealing}
@@ -52,6 +56,12 @@
 
 \renewcommand{\dir}{deterministic_annealing}
 \input{\dir/deterministic_annealing.tex}
+
+\renewcommand{\dir}{laplace_method}
+\input{\dir/laplace_method.tex}
+
+\renewcommand{\dir}{histogram_clustering}
+\input{\dir/histogram_clustering.tex}
 
 \chapter{Information bottleneck}
 
@@ -61,11 +71,14 @@ To be done in 2022.
 
 To be done in 2022.
 
-\chapter{Pairwise clustering}
+\chapter{Mean-field approximation}
 
 To be done in 2022.
 
-\chapter{Mean-field approximation}
+%\renewcommand{\dir}{pairwise_clustering}
+%\input{\dir/pairwise_clustering.tex}
+
+\chapter{Pairwise clustering}
 
 To be done in 2022.
 
@@ -73,7 +86,7 @@ To be done in 2022.
 \input{\dir/posterior_agreement.tex}
 
 \bibliographystyle{abbrv}
-\bibliography{main}
+\bibliography{biblio}
 
 \appendix
 

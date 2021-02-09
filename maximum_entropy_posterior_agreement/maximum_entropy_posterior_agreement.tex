@@ -25,7 +25,10 @@ p(c \mid X) \propto \exp\left(- \frac{1}{T} R(c, X)\right).
 %
 where $T > 0$ is a hyper-parameter called the \emph{temperature}.
 
-\paragraph{Step 4: Posterior agreement} We show in Section~\ref{sec:array} that merely picking the ``most likely'' model $c$ according to $p(c \mid X)$ amounts to overfitting and, therefore, it is not enough to generalize well. We use instead two independent observations $X'$ and $X''$ and define the \emph{posterior agreement kernel} between $X'$ and $X''$:
+\paragraph{Step 4: Model selection} The last step is to select an adequate temperature $T$. This can be done using standard techniques like cross validation. 
+%We show in Section~\ref{sec:array} that merely picking the ``most likely'' model $c$ according to $p(c \mid X)$ amounts to overfitting and, therefore, it is not enough to generalize well. 
+
+An alternative model selection technique that we study in this course is \emph{posterior agreement}. For this, we use two independent observations $X'$ and $X''$ and define the \emph{posterior agreement kernel} between $X'$ and $X''$:
 %
 \begin{equation}
 \kappa(X', X'') := \sum_{c \in C} p(c \mid X) p(c \mid X'').
@@ -103,110 +106,6 @@ where $T > 0$ is a hyper-parameter called the \emph{temperature}.
 \label{def:gibbs_dist}
 \end{definition}
 
-\begin{definition}
-For a cost function $R$ and a temperature $T > 0$.  The \emph{posterior agreement kernel (induced by $R$ and $T$)} is a function $\kappa : \mathcal{X} \times \mathcal{X} \to [0,1]$ such that, for any two observations $X', X'' \in \mathcal{X}$,
-%
-\begin{equation}
-\kappa(X', X'') = \sum_{c \in \mathcal{C}} p(c \mid X') p(c \mid X'').
-\end{equation}
-%
-Here, $p(\cdot \mid X')$ and $p(\cdot \mid X'')$ are two Gibbs distributions induced by $R$ and with temperature $T$.
-\end{definition}
-
-\begin{definition}[The combined Gibbs distribution]
-Assume given two Gibbs distributions induced by a same cost function, but two different observations $X'$ and $X''$, and having the same temperature.
-The \emph{combined Gibbs distribution} is defined as follows
-%
-\begin{equation}
-p(c \mid X', X'') \propto p(c \mid X') p(c \mid X'').
-\end{equation}
-%
-\end{definition}
-
-\begin{definition}[The posterior agreement principle]
-Assume given two independent observations $X'$ and $X''$ of a phenomenon. Whenever making a choice $\omega$ from a set $\Omega$ of options concerning a particular learning algorithm, one must choose the option that \emph{maximizes the posterior agreement kernel}:
-%
-\begin{equation}
-\omega^* = \argmax_{\omega \in \Omega} \kappa(X', X'').
-\end{equation}
-%
-\end{definition}
-
-\subsection*{Statistical learning}
-
-Statistical learning proposes to train models via \emph{empirical risk minimization (ERM)}. In ERM, we define an instance space $\mathcal{X}$, a hypothesis class $\mathcal{C}$, and a cost function $R$. 
-
-ERM trains a model in $c \in \mathcal{C}$ that minimizes \emph{the expected cost} $\mathbb{E}_X[R(c, X)]$, where $X$ is a random observation of the phenomenon. However, this requires the distribution $p$ behind the phenomenon, which we assume to be unavailable. In consequence, statistical learning advocates to approximate this expected cost with the \emph{empirical cost} $\frac{1}{n} \sum_{i \leq n} R(c, X_i)$, where $X_1, \ldots, X_n$ is a sample of $p$.
-
-We define the \emph{empirical risk minimizer} as a model $\hat{c}$ that minimizes the empirical cost. That is,
-%
-\begin{equation}
-\hat{c} = \argmin_{c \in \mathcal{C}} \sum_{i \leq n} R(c, X_i).
-\end{equation}
-%
-We assume for simplicity that $\hat{c}$ always exist, although this is not true in general.
-
-\section{The random array}
-\label{sec:array}
-
-We present an artificial toy example, called \emph{the random array} that illustrates the power of ME+PA. In particular, it illustrates the ways in which empirical risk minimization overconfidently generalizes when there is insufficient data and noise interference.
-
-\subsection{Setup}
-
-Consider a random array $\mathfrak{X} = \left(\mathfrak{X}_0, \ldots, \mathfrak{X}_{n-1}\right)$ with range $\mathbb{R}^n$. Suppose that $\mathfrak{X}_i \sim \mathcal{N}\left(i, \sigma_i\right)$. For convenience, we let $\sigma_i$ be such that $\prob\left(\mathfrak{X}_i < 0\right) = 0.05$. The random array $\mathfrak{X}$ is our phenomenon. 
-
-Assume that we only have two observations $X'$ and $X''$, consisting of two arrays drawn at random from $\mathfrak{X}$'s distribution. We want to estimate, from just $X'$ and $X''$,
-%
-\begin{equation}
-i^* := \argmin_{i \leq n} \mathbb{E}_{\mathfrak{X}}[\mathfrak{X}_i].
-\end{equation}
-
-Take a moment to convince yourself that $i^* = 0$. To give some intuition on the problem, 
-consider Figure~\ref{fig:illustration_random_array}, which shows a realization of $X'$ and $X''$. 
-
-\begin{figure}[hbtp]
-\centering
-\includegraphics[width=\textwidth]{\dir/two_observations.png}
-\caption{}
-\label{fig:illustration_random_array}
-\end{figure}
-
-\subsection{What happens if we do ERM?}
-
-If we follow standard ERM, then we would estimate $i^*$ with 
-%
-$$\hat{i} := \argmin_{i \leq n} X'_i + X''_i.$$ 
-%
-That is, the popular wisdom in statistical learning advocates to estimate $i^*$ with the index where the minimum of $X' + X''$ is. However, this approach fails in probability as $n$ increases. This is because, with high probability, there is some $i > 0$ for which $X'_i + X''_i < X'_0 + X''_0$.
-
-\subsection{What happens if we do ME+PA?}
-
-ME+PA correctly estimates $i^*$ much more often than ERM. To demonstrate this, we set $n = 1000$ and conducted an experiment where we drew at random 1000 pairs $(X', X'')$ of independent observations from $\mathfrak{X}$'s distribution. For each pair, we executed ERM and ME+PA to estimate $i^*$. We counted how often each value $i \leq n$ was chosen as the estimate by each method. Figures~\ref{fig:erm_array} and~\ref{fig:mepa_array} demonstrate that in ~20\% of the cases, ME+PA selects $i^*$ as the estimate, whereas ERM never picks it.
-
-\begin{figure}
-\centering
-\includegraphics[width=0.8\textwidth]{\dir/erm_array.png}
-\caption{Histogram counting how often each estimate in \{0, \ldots, 999\} was picked by ERM as the estimate for $i^*$ across 1000 trials. Observe that ERM never picked the correct estimate.}
-\label{fig:erm_array}
-\end{figure}
-
-\begin{figure}
-\centering
-\includegraphics[width=0.8\textwidth]{\dir/mepa_array.png}
-\caption{Histogram counting how often each estimate in \{0, \ldots, 999\} was picked by ME+PA as the estimate for $i^*$ across 1000 trials. In contrast to ERM, ME+PA picks the correct estimate around 20\% of the time.}
-\label{fig:mepa_array}
-\end{figure}
-
-\subsection{Application of ME+PA}
-
-We now illustrate the steps to apply ME+PA to this problem.
-
-First, the hypothesis class is $\mathcal{C} = \{0, \ldots, n-1\}$ and the set $\mathcal{X}$ is $\mathbb{R}^n$.
-
-Let $X \in \mathcal{X}$ be an observation. The cost function is $R(c, X) = X_c$. The Gibbs distribution is given by $p(c \mid X) \propto \exp\left(-1/T X_c\right)$. For the two given observations $X'$ and $X''$, a combined Gibbs distribution is $p(c \mid X', X'') \propto \exp\left(-1/T \left(X'_c + X''_c\right)\right)$.
-
-We now need to define a value for $T$. We guess a set of candidate values and, for each of them, we compute the posterior agreement kernel $\kappa(X', X'')$. We then pick the value that yielded the maximum posterior agreement kernel. Finally, we just choose the $\hat{c}$ with largest $p(\hat{c} \mid X', X'')$.
-
 \section{Maximum entropy}
 \label{sec:max_entropy}
 
@@ -260,10 +159,10 @@ Therefore, for $c \in \mathcal{C}$,
 Setting this expression equal to zero and solving for $p(c)$, while using the constraint that $\sum_c p(c) = 1$, yields that
 %
 \begin{equation}
-p(c) \propto \exp(-\lambda_2 R(c, X)).
+p(c) \propto \exp(\lambda_2 R(c, X)).
 \end{equation}
 
-Observe that $p(\cdot)$ already fulfils the constraint~(\ref{req:max_ent_nonneg}). If we enforce the constraint~(\ref{req:max_ent_mono}), then $\lambda_2$ must be non-negative. Furthermore, if $\lambda_2 = 0$, which is the case when $\mu = 1/ \left|\mathcal{C}\right| \sum_c R(c, X)$, then $p(\cdot)$ is the uniform distribution over $\mathcal{C}$, which is not interesting for us as $p(\cdot)$ does not discriminate the different models in $\mathcal{C}$ in this case. We can therefore agree that $\lambda_2 > 0$. To make this distribution look more like the Gibbs distribution used in statistical physics to model particle systems, we define $T := 1 / \lambda_2$. Hence, the solution of the constrained optimization problem is
+Observe that $p(\cdot)$ already fulfils the constraint~(\ref{req:max_ent_nonneg}). If we enforce the constraint~(\ref{req:max_ent_mono}), then $\lambda_2$ must be zero or negative. Furthermore, if $\lambda_2 = 0$, which is the case when $\mu = 1/ \left|\mathcal{C}\right| \sum_c R(c, X)$, then $p(\cdot)$ is the uniform distribution over $\mathcal{C}$, which is not interesting for us as $p(\cdot)$ does not discriminate the different models in $\mathcal{C}$ in this case. We can therefore agree that $\lambda_2 < 0$. To make this distribution look more like the Gibbs distribution used in statistical physics to model particle systems, we define $T := 1 / \lambda_2$. Hence, the solution of the constrained optimization problem is
 %
 \begin{equation}
 p(c) \propto \exp\left(-\frac{1}{T} R(c, X)\right), \text{ for some $T > 0$.}
@@ -309,6 +208,113 @@ $$p(\cdot \mid X) \propto \exp\left(-\frac{1}{T}R(c, X)\right), \quad \text{with
 \end{exercise}
 
 Observe that without the regularization term $\lambda \left\|c\right\|^2$, it would not be possible to satisfy all the constraints.
+
+\section{Posterior agreement}
+\label{sec:pa_mepa}
+
+Once the Gibbs distribution $p(\cdot \mid X)$ for a cost function $R$ and an observation $X$ has been defined, the last step is to select a temperature $T > 0$. One way to do this is via standard model selection techniques like cross-validation. However, we investigate in this course a new technique inspired by information theory, called \emph{posterior agreement}.
+
+\begin{definition}
+For a cost function $R$ and a temperature $T > 0$.  The \emph{posterior agreement kernel (induced by $R$ and $T$)} is a function $\kappa : \mathcal{X} \times \mathcal{X} \to [0,1]$ such that, for any two observations $X', X'' \in \mathcal{X}$,
+%
+\begin{equation}
+\kappa(X', X'') = \sum_{c \in \mathcal{C}} p(c \mid X') p(c \mid X'').
+\end{equation}
+%
+Here, $p(\cdot \mid X')$ and $p(\cdot \mid X'')$ are two Gibbs distributions induced by $R$ and with temperature $T$.
+\end{definition}
+
+\begin{definition}[The combined Gibbs distribution]
+Assume given two Gibbs distributions induced by a same cost function, but two different observations $X'$ and $X''$, and having the same temperature.
+The \emph{combined Gibbs distribution} is defined as follows
+%
+\begin{equation}
+p(c \mid X', X'') \propto p(c \mid X') p(c \mid X'').
+\end{equation}
+%
+\end{definition}
+
+\begin{definition}[The posterior agreement principle]
+Assume given two independent observations $X'$ and $X''$ of a phenomenon. Whenever making a choice $\omega$ from a set $\Omega$ of options concerning a particular learning algorithm, one must choose the option that \emph{maximizes the posterior agreement kernel}:
+%
+\begin{equation}
+\omega^* = \argmax_{\omega \in \Omega} \kappa(X', X'').
+\end{equation}
+%
+\end{definition}
+
+\section{The random array}
+\label{sec:random_array}
+
+We present an artificial toy example, called \emph{the random array} that illustrates the power of ME+PA. In particular, it illustrates the ways in which empirical risk minimization overconfidently generalizes when there is insufficient data and noise interference.
+
+\subsection{Setup}
+
+Consider a random array $\mathfrak{X} = \left(\mathfrak{X}_0, \ldots, \mathfrak{X}_{n-1}\right)$ with range $\mathbb{R}^n$. Suppose that $\mathfrak{X}_i \sim \mathcal{N}\left(i, \sigma_i\right)$. For convenience, we let $\sigma_i$ be such that $\prob\left(\mathfrak{X}_i < 0\right) = 0.05$. The random array $\mathfrak{X}$ is our phenomenon. 
+
+Assume that we only have two observations $X'$ and $X''$, consisting of two arrays drawn at random from $\mathfrak{X}$'s distribution. We want to estimate, from just $X'$ and $X''$,
+%
+\begin{equation}
+i^* := \argmin_{i \leq n} \mathbb{E}_{\mathfrak{X}}[\mathfrak{X}_i].
+\end{equation}
+
+Take a moment to convince yourself that $i^* = 0$. To give some intuition on the problem, 
+consider Figure~\ref{fig:illustration_random_array}, which shows a realization of $X'$ and $X''$. 
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=\textwidth]{\dir/two_observations.png}
+\caption{}
+\label{fig:illustration_random_array}
+\end{figure}
+
+\subsection{What happens if we use statistical learning to solve this problem?}
+
+Statistical learning proposes to train models via \emph{empirical risk minimization (ERM)}. In ERM, we define an instance space $\mathcal{X}$, a hypothesis class $\mathcal{C}$, and a cost function $R$. 
+
+ERM trains a model in $c \in \mathcal{C}$ that minimizes \emph{the expected cost} $\mathbb{E}_X[R(c, X)]$, where $X$ is a random observation of the phenomenon. However, this requires the distribution $p$ behind the phenomenon, which we assume to be unavailable. In consequence, statistical learning advocates to approximate this expected cost with the \emph{empirical cost} $\frac{1}{n} \sum_{i \leq n} R(c, X_i)$, where $X_1, \ldots, X_n$ is a sample of $p$.
+
+We define the \emph{empirical risk minimizer} as a model $\hat{c}$ that minimizes the empirical cost. That is,
+%
+\begin{equation}
+\hat{c} = \argmin_{c \in \mathcal{C}} \sum_{i \leq n} R(c, X_i).
+\end{equation}
+%
+We assume for simplicity that $\hat{c}$ always exist, although this is not true in general.
+
+If we follow standard ERM, then we would estimate $i^*$ with 
+%
+$$\hat{i} := \argmin_{i \leq n} X'_i + X''_i.$$ 
+%
+That is, the popular wisdom in statistical learning advocates to estimate $i^*$ with the index where the minimum of $X' + X''$ is. However, this approach fails in probability as $n$ increases. This is because, with high probability, there is some $i > 0$ for which $X'_i + X''_i < X'_0 + X''_0$.
+
+\subsection{What happens if we do ME+PA?}
+
+ME+PA correctly estimates $i^*$ much more often than ERM. To demonstrate this, we set $n = 1000$ and conducted an experiment where we drew at random 1000 pairs $(X', X'')$ of independent observations from $\mathfrak{X}$'s distribution. For each pair, we executed ERM and ME+PA to estimate $i^*$. We counted how often each value $i \leq n$ was chosen as the estimate by each method. Figures~\ref{fig:erm_array} and~\ref{fig:mepa_array} demonstrate that in ~20\% of the cases, ME+PA selects $i^*$ as the estimate, whereas ERM never picks it.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\textwidth]{\dir/erm_array.png}
+\caption{Histogram counting how often each estimate in \{0, \ldots, 999\} was picked by ERM as the estimate for $i^*$ across 1000 trials. Observe that ERM never picked the correct estimate.}
+\label{fig:erm_array}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\textwidth]{\dir/mepa_array.png}
+\caption{Histogram counting how often each estimate in \{0, \ldots, 999\} was picked by ME+PA as the estimate for $i^*$ across 1000 trials. In contrast to ERM, ME+PA picks the correct estimate around 20\% of the time.}
+\label{fig:mepa_array}
+\end{figure}
+
+\subsection{Application of ME+PA}
+
+We now illustrate the steps to apply ME+PA to this problem.
+
+First, the hypothesis class is $\mathcal{C} = \{0, \ldots, n-1\}$ and the set $\mathcal{X}$ is $\mathbb{R}^n$.
+
+Let $X \in \mathcal{X}$ be an observation. The cost function is $R(c, X) = X_c$. The Gibbs distribution is given by $p(c \mid X) \propto \exp\left(-1/T X_c\right)$. For the two given observations $X'$ and $X''$, a combined Gibbs distribution is $p(c \mid X', X'') \propto \exp\left(-1/T \left(X'_c + X''_c\right)\right)$.
+
+We now need to define a value for $T$. We guess a set of candidate values and, for each of them, we compute the posterior agreement kernel $\kappa(X', X'')$. We then pick the value that yielded the maximum posterior agreement kernel. Finally, we just choose the $\hat{c}$ with largest $p(\hat{c} \mid X', X'')$.
 
 \section{Relation between the holdout and ME+PA}
 
