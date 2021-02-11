@@ -35,7 +35,8 @@ An alternative model selection technique that we study in this course is \emph{p
 \label{eq:kernel_post_agr}
 \end{equation}
 %
-This kernel can be used to select a value for $T$ from a set of candidate temperatures $\mathcal{T}$. It can even be used to select a cost function $R$ among a set of candidate cost functions $\mathcal{R}$:
+This kernel can be used to select a value for $T$ from a set of candidate temperatures $\mathcal{T}$. 
+%It can even be used to select a cost function $R$ among a set of candidate cost functions $\mathcal{R}$:
 %
 \begin{equation}
 T^*, R^* = \argmax_{T \in \mathcal{T}, R \in \mathcal{R}} \kappa(X', X'')
@@ -243,6 +244,60 @@ Assume given two independent observations $X'$ and $X''$ of a phenomenon. Whenev
 %
 \end{definition}
 
+\section{Relation between the holdout and ME+PA}
+
+Many training algorithms require hyper-parameters to define the hypothesis class $\mathcal{C}$. A common technique to select those hyper-parameters is \emph{the hold-out}. 
+
+In the hold-out, we draw two samples $X'$ and $X''$, usually called the \emph{training sample} and the \emph{testing sample} respectively. Models are trained in $X'$ and then evaluated in $X''$. A natural evaluation metric is \emph{the out-of-sample error}:
+%
+\begin{align}
+\mathbb{E}_{C | X'}\left[R(C, X'')\right] &= \mathbb{E}_{C | X'}\left[- T \log p(C \mid X'')\right]\\ 
+&\propto - \int p(c \mid X') \log p(c \mid X'') \, dc.
+\end{align}
+%
+Here, $p(C \mid X')$ and $p(C \mid X'')$ are Gibbs distributions induced by $R$ and some temperature $T$.
+
+The hold-out advocates to select the hyper-parameter that minimizes this error.
+
+In contrast, posterior agreement advocates to select the hyper-parameter that maximizes the posterior agreement kernel induced by $R$ and some temperature $T$:
+%
+\begin{equation}
+\mathbb{E}_{C | X'}\left[p(C \mid X'')\right].
+\end{equation}
+
+We argue here that the posterior agreement kernel is less sensitive to noise than the out-of-sample error. To see this suppose that $X' = X + \Delta'$ and $X'' = X + \Delta''$, where $X \in \mathbb{R}^m$ and that $\Delta', \Delta''$ are distributed according to a Gaussian. Furthermore, we assume that $\left\|\Delta'\right\| < 1$ and $\left\|\Delta''\right\| < 1$. 
+
+\begin{exercise} Show that
+%
+\begin{equation}
+\mathbb{E}_{C | X'}[R(C, X'')] = \mathbb{E}_{C | X}[R(C, X)] + O(\left\|\Delta\right\|) \text{ and}
+\end{equation}
+%
+\begin{equation}
+\mathbb{E}_{C | X'}[p(C \mid X'')] = \mathbb{E}_{C | X}[R(C, X)] + O(\left\|\Delta\right\|^2).
+\end{equation}
+%
+Use the following second-order Taylor approximation:
+%
+\begin{equation}
+p(C \mid X') = p(C \mid X) + \left(\nabla_{X}p(C\mid X)\right)^\top \Delta' + O(\left\|\Delta'\right\|^2).
+\end{equation}
+%
+\end{exercise}
+%
+% of where we score candidates for the hyper-parameter values with the \emph{validation error}
+
+%
+
+%The expectation is over a \emph{validation set} of examples, which in our framework is just another observation from our phenomenon. Since we do not have access to the 
+
+%A popular model validation technique is cross validation. In this technique we a model $c \in \mathcal{C}$
+
+%
+
+%\todo{Complete this proof.}
+
+
 \section{The random array}
 \label{sec:random_array}
 
@@ -316,63 +371,12 @@ Let $X \in \mathcal{X}$ be an observation. The cost function is $R(c, X) = X_c$.
 
 We now need to define a value for $T$. We guess a set of candidate values and, for each of them, we compute the posterior agreement kernel $\kappa(X', X'')$. We then pick the value that yielded the maximum posterior agreement kernel. Finally, we just choose the $\hat{c}$ with largest $p(\hat{c} \mid X', X'')$.
 
-\section{Relation between the holdout and ME+PA}
+\section{Conclusion}
 
-Many training algorithms require hyper-parameters to define the hypothesis class $\mathcal{C}$. A common technique to select those hyper-parameters is \emph{the hold-out}. 
+A popular statistical learning approach for training models is empirical risk minimization (ERM). In this approach, you define a cost function and aim for a model that minimizes the expected cost. In most practical cases, minimizing this expected cost is not possible as we do not have access to the distribution governing that expectation. Instead, we approximate it with an empirical estimate, and then compute the model that minimizes this empirical estimate. This chapter questions this approach in two ways. 
 
-In the hold-out, we draw two samples $X'$ and $X''$, usually called the \emph{training sample} and the \emph{testing sample} respectively. Models are trained in $X'$ and then evaluated in $X''$. A natural evaluation metric is \emph{the out-of-sample error}:
-%
-\begin{align}
-\mathbb{E}_{C | X'}\left[R(C, X'')\right] &= \mathbb{E}_{C | X'}\left[- T \log p(C \mid X'')\right]\\ 
-&\propto - \int p(c \mid X') \log p(c \mid X'') \, dc.
-\end{align}
-%
-Here, $p(C \mid X')$ and $p(C \mid X'')$ are Gibbs distributions induced by $R$ and some temperature $T$.
+\paragraph{ERM trains suboptimal models:} First, in many practical cases, the cost function is non-convex and has several local minima, as in the case of the $K$-means cost function or cost functions used for training neural networks. As a result, empirical risk minimization produces only one model that is a local minimum of the cost function. We argue that such models may be undesirable, as we observed in the $K$-means algorithm. 
 
-The hold-out advocates to select the hyper-parameter that minimizes this error.
+\paragraph{Lack of information:} ERM produces only single models. These single models may not give a proper overview of the nature of the phenomenon and may be misleading, as we observed in the random array problem.
 
-In contrast, posterior agreement advocates to select the hyper-parameter that maximizes the posterior agreement kernel induced by $R$ and some temperature $T$:
-%
-\begin{equation}
-\mathbb{E}_{C | X'}\left[p(C \mid X'')\right].
-\end{equation}
-
-We argue here that the posterior agreement kernel is less sensitive to noise than the out-of-sample error. To see this suppose that $X' = X + \Delta'$ and $X'' = X + \Delta''$, where $X \in \mathbb{R}^m$ and that $\Delta', \Delta''$ are distributed according to a Gaussian. Furthermore, we assume that $\left\|\Delta'\right\| < 1$ and $\left\|\Delta''\right\| < 1$. 
-
-\begin{exercise} Show that
-%
-\begin{equation}
-\mathbb{E}_{C | X'}[R(C, X'')] = \mathbb{E}_{C | X}[R(C, X)] + O(\left\|\Delta\right\|) \text{ and}
-\end{equation}
-%
-\begin{equation}
-\mathbb{E}_{C | X'}[p(C \mid X'')] = \mathbb{E}_{C | X}[R(C, X)] + O(\left\|\Delta\right\|^2).
-\end{equation}
-%
-Use the following second-order Taylor approximation:
-%
-\begin{equation}
-p(C \mid X') = p(C \mid X) + \left(\nabla_{X}p(C\mid X)\right)^\top \Delta + O(\left\|\Delta\right\|^2).
-\end{equation}
-%
-\end{exercise}
-%
-% of where we score candidates for the hyper-parameter values with the \emph{validation error}
-
-%
-
-%The expectation is over a \emph{validation set} of examples, which in our framework is just another observation from our phenomenon. Since we do not have access to the 
-
-%A popular model validation technique is cross validation. In this technique we a model $c \in \mathcal{C}$
-
-%
-
-%\todo{Complete this proof.}
-
-\section{Informal justification and motivation}
-\label{sec:inf_justification}
-
-\todo{Prepare intuitive explanation}
-
-\todo{Demonstrate the entire workflow of ME+PA for clustering.}
-
+To address these limitations, we propose a new approach: maximum entropy and posterior agreement. In maximum entropy, rather than producing a single model, we produce a maximum-entropy distribution over models. This distribution is produced in a way that models with low cost get more mass than models with high cost. The distribution offers then a better overview of the landscape of models that fit the phenomenon. These distributions require a value for a hyper-parameter, called the temperature. This parameter can be chosen using standard model selection techniques. In our case, we propose an alternative, called posterior agreement.

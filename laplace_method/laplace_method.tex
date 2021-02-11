@@ -1,3 +1,296 @@
 \chapter{The Laplace method}
+\label{ch:laplace}
 
-Coming soon...
+In this chapter, we study an analytical tool to handle intractable Gibbs distributions: \emph{the Laplace method}. We illustrate this in the context of clustering documents represented as vectors using the bag of words model. In this case, we wish then to cluster documents not by their Euclidean distance, but by how much the multisets of words occurring in the respective documents overlap. This overlap can be quantified by two documents $x$ and $y$ via their \emph{cosine similarity}: $x^\top y / \left\|x\right\|y\left\|\right\|$.
+
+\section{Least-angle clustering}
+
+Assume given a set $X = \{x_1, x_2, \ldots, x_N\} \subseteq \mathbb{R}^d$ of unit vectors. We wish to cluster them in $K$ clusters so that any pair of vectors are assigned to the same cluster if they point in similar directions.
+
+We model a cluster assignment as a matrix $M \in \{0, 1\}^{N \times K}$, where
+%
+\begin{equation}
+M_{ik} \begin{cases}
+1 & \text{if $x_i$ is assigned to cluster $k$}\\
+0 & \text{otherwise}.
+\end{cases}
+\end{equation}
+%
+Therefore, it is required that $\sum_{k \leq K} M_{ik} = 1$, for any $i \leq N$. Observe that for $i, j \leq N$ and $k \leq K$, $M_{ik}M_{jk} = 1$ iff $x_i$ and $x_j$ are assigned to the same cluster.\looseness=-1
+
+Our goal is to use maximum entropy to train a cluster assignment, using the following cost function
+%
+\begin{equation}
+R(M, X) = \frac{1}{N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j.
+\end{equation}
+%
+
+Observe that the normalization constant of the Gibbs distribution induced by this cost function is a sum over $K^N$ elements, making it intractable. We introduce in this chapter \emph{the Laplace method} and use it to give an analytically tractable estimate of this normalization constant.
+
+%\section{Outline}
+%
+%We first rewrite the cost function into a sum, where each term in the sum is a quadratic form. Afterwards, we introduce dummy variables and use the technique of completing the square to 
+
+\section{The cost function}
+\label{sec:cost_function_la}
+
+\begin{exercise}
+Show that
+%
+\begin{equation}
+R(M, X) = -\frac{1}{2N}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2 + \frac{1}{2}.
+\end{equation}
+\label{ex:cost_fun_quad}
+\end{exercise}
+
+\begin{proof}
+%
+\begin{align}
+R(M, X) &= -2\left(\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j\right)\\
+&= -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j\\
+&= -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j -\frac{1}{2N}\sum_{j < i \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j\\
+&= -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j-\frac{1}{2N}\sum_{j < i \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j+\\
+& -\frac{1}{2N}\sum_{i} \sum_{k \leq K} M_{ik}M_{ik}x_i^\top x_i+\frac{1}{2N}\sum_{i} \sum_{k \leq K} M_{ik}M_{ik}x_i^\top x_i\\
+&= -\frac{1}{2N}\sum_{k \leq K}\sum_{i, j \leq N}  M_{ik}M_{jk}x_i^\top x_j + \frac{1}{2N}\sum_{i} \sum_{k \leq K} M_{ik}M_{ik}x_i^\top x_i\\
+&= - \frac{1}{2N}\sum_{k \leq K}\sum_{i, j \leq N} M_{ik}M_{jk} x_i^\top x_j + \frac{1}{2N}N.\\
+&= - \frac{1}{2N}\sum_{k \leq K}\sum_{i, j \leq N} M_{ik}M_{jk} x_i^\top x_j + \frac{1}{2}.\\
+&= - \frac{1}{2N}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2 + \frac{1}{2}.
+\end{align}
+%
+\end{proof}
+
+\section{The normalization constant}
+
+Recall the Gibbs distribution
+%
+$$p(c \mid X) = \frac{1}{Z_X}\exp\left(-\frac{1}{T}R(M, X)\right),$$
+%
+where $Z_X$ is the partition function. 
+
+\begin{exercise}
+Prove that
+%
+\begin{equation}
+Z_X = \sum_{M \in \{0, 1\}^{N \times K}}e^{-\frac{1}{2T}}\prod_{k \leq K} \exp\left(\frac{1}{2NT}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2\right).
+\label{eq:partition_function}
+\end{equation}
+%
+\end{exercise}
+
+\begin{proof}
+\begin{align*}
+Z_X &= \sum_{M} \exp\left(-\frac{1}{T}R(M, X)\right)\\
+&= \sum_{M} \exp\left(\frac{1}{2NT}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2 - \frac{1}{2NT}\right)\\
+&= e^{-\frac{1}{2T}}\sum_{M} \prod_{k \leq K}\exp\left(\frac{1}{2NT}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2\right).\\
+\end{align*}
+\end{proof}
+
+Observe that the partition function requires to compute a sum over $2^{N \times K}$ elements and it is not clear how to do that sum analytically or in a computationally efficient way. Hence, computing the Gibbs distribution takes exponential time. This makes ME + PA very inefficient as these methods rely on computing the Gibbs distribution.
+
+\section{Completing the square}
+
+The remaining exercises provide a trick to efficiently compute the partition function.
+
+\begin{exercise}
+For $k \leq K$, define a dummy variable $y_k$. Show that
+%
+\begin{align}
+&exp\left(\frac{1}{2NT}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2\right)\\
+&\qquad = \left(\frac{2\pi T}{N}\right)^{\frac{D}{2}} \int \exp\left(- \frac{N}{2T}\left\|y_k\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y_k\right)dy_k
+\label{eq:partition_trick}
+\end{align}
+%
+\textit{Hint: Start from here
+%
+$$\int \exp\left(-\frac{N}{2T} \left\|y_k - \frac{1}{N}\sum_{i \leq N}M_{ik}x_i\right\|^2\right)dy_k.$$
+%
+Observe that this is the normalization constant for a multivariate Gaussian distribution.}
+\end{exercise}
+
+\begin{proof}
+Using the fact that this is the normalization constant of a Gaussian, we have that
+%
+\begin{align}
+&\left(\frac{2\pi T}{N}\right)^{-\frac{D}{2}}\\
+ &= \int \exp\left(-\frac{N}{2T} \left\|y_k - \frac{1}{N}\sum_{i \leq N}M_{ik}x_i\right\|^2\right)dy_k\\
+&= \int \exp\left(-\frac{N}{2T}\left[ \left\|y_k\right\|^2 - \frac{2}{N}y_k^\top\sum_{i \leq N}M_{ik}x_i + \frac{1}{N^2}\left\|\sum_{i \leq N}M_{ik}x_i\right\|^2\right]\right)dy_k\\
+&= \exp\left(-\frac{N}{2T}\frac{1}{N^2}\left\|\sum_{i \leq N}M_{ik}x_i\right\|^2\right)\int \exp\left(-\frac{N}{2T}\left[ \left\|y_k\right\|^2 - \frac{2}{N}y_k^\top\sum_{i \leq N}M_{ik}x_i\right]\right)dy_k\\
+&= \exp\left(-\frac{1}{2NT}\left\|\sum_{i \leq N}M_{ik}x_i\right\|^2\right)\int \exp\left(-\frac{N}{2T}\left\|y_k\right\|^2 +\frac{1}{T}y_k^\top\sum_{i \leq N}M_{ik}x_i\right)dy_k.
+\end{align}
+%
+We can rearrange the resulting equation to obtain Equation~\ref{eq:partition_trick}.
+\end{proof}
+
+\section{Swapping sum and product}
+\label{sec:swap_sum_prod}
+
+\begin{exercise}
+Using Equations~\ref{eq:partition_function} and~\ref{eq:partition_trick}, show that
+%
+\begin{equation}
+Z_X = \alpha \int\exp\left(-\frac{N}{2T}\sum_{k \leq K} \left\|y_k\right\|^2 + \sum_{i \leq N} \log \sum_{k \leq K} \exp\left(\frac{1}{T}x_i^\top y_k\right)\right)dy,
+\end{equation}
+%
+where
+%
+\begin{align}
+\alpha &:= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}, \text{ and}\\
+\int g(y_1, \ldots, y_K)d\mathbf{y} &:= \int \int \ldots \int g(y_1, \ldots, y_K) dy_1 dy_2\ldots dy_K.
+\end{align}
+
+\textit{Hint: Prove and use the following auxiliary results.}
+
+$$\prod_{k \leq K} \int f_k(y) d\mathbf{y} = \int \prod f_k(y_k) dy.$$
+
+$$\sum_{M \in \{0, 1\}^{N \times K}}\prod_{i \leq N}\exp\left(\frac{1}{T}\sum_{k \leq K}M_{ik}x_i^\top y_k\right) = \prod_{i \leq N}\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right).$$
+\end{exercise}
+
+\begin{proof}
+Using Equation~\ref{eq:partition_trick}, Equation~\ref{eq:partition_function} becomes
+%
+\begin{align*}
+Z_X &= e^{-\frac{1}{2T}}\sum_{M \in \{0, 1\}^{N \times K}}\prod_{k \leq K} \exp\left(\frac{1}{2NT}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2\right)\\
+&= e^{-\frac{1}{2T}}\sum_{M \in \{0, 1\}^{N \times K}}\prod_{k \leq K} \left(\frac{2\pi T}{N}\right)^{\frac{D}{2}} \int \exp\left(- \frac{N}{2T}\left\|y\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y\right)dy\\
+&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\sum_{M \in \{0, 1\}^{N \times K}}\prod_{k \leq K}  \int \exp\left(- \frac{N}{2T}\left\|y\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y\right)dy\\
+\end{align*}
+
+Observe now the following property.
+%
+\begin{align*}
+\prod_{k \leq K} \int f_k(y) dy &= \left(\int f_1(y) dy\right)\left(\int f_2(y) dy\right)\ldots \left(\int f_K(y) dy\right)\\
+&= \left(\int f_1(y_1) dy_1\right)\left(\int f_2(y_2) dy_2\right)\ldots \left(\int f_K(y_K) dy_K\right)\\
+&= \int f_1(y_1) f_2(y_2) \ldots f_K(y_K) d\mathbf{y}\\
+&= \int \prod f_k(y_k) d\mathbf{y}.
+\end{align*}
+
+Applying this property above gives us the following.
+
+\begin{align}
+&Z_X\\
+&= \alpha\sum_M\int \prod_{k \leq K} \exp\left(- \frac{N}{2T}\left\|y_k\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y_k\right)d\mathbf{y}\\
+&= \alpha\sum_M\int \exp\left(- \frac{N}{2T}\sum_{k \leq K}\left\|y_k\right\|^2 + \frac{1}{T}\sum_{k \leq K}\sum_{i \leq N}M_{ik}x_i^\top y_k\right)d\mathbf{y}\\
+&= \alpha\sum_M\int \exp\left(- \frac{N}{2T}\sum_{k \leq K}\left\|y_k\right\|^2\right)\exp\left(\frac{1}{T}\sum_{i \leq N}\sum_{k \leq K}M_{ik}x_i^\top y_k\right)d\mathbf{y}\\
+&= \alpha\sum_M\int \exp\left(- \frac{N}{2T}\sum_{k \leq K}\left\|y_k\right\|^2\right)\prod_{i \leq N}\exp\left(\frac{1}{T}\sum_{k \leq K}M_{ik}x_i^\top y_k\right)d\mathbf{y}\\
+&= \alpha\int \sum_{M}\left[\exp\left(- \frac{N}{2T}\sum_{k \leq K}\left\|y_k\right\|^2\right)\prod_{i \leq N}\exp\left(\frac{1}{T}\sum_{k \leq K}M_{ik}x_i^\top y_k\right)\right]d\mathbf{y}\\
+&= \alpha\int \exp\left(- \frac{N}{2T}\sum_{k \leq K}\left\|y_k\right\|^2\right)\sum_{M}\prod_{i \leq N}\exp\left(\frac{1}{T}\sum_{k \leq K}M_{ik}x_i^\top y_k\right)d\mathbf{y}.
+\end{align}
+
+Given $M \in \{0, 1\}^{N \times K}$, we now define an auxiliary function $c_M : \{1, \ldots, N\} \to \{1, \ldots, K\}$. For $i \leq N$, $c_M(i) = k$ iff $M_{ik} = 1$. Observe that $c_M$ is well defined as $M \in \{0, 1\}^{N \times K}$ and $\sum_k M_{ik} = 1$. As a result, $\sum_k {M_{ik}}x_i^\top y_k = x_i^\top y_{c(i)}$. Observe now that
+%
+\begin{align}
+&\sum_{M \in \{0, 1\}^{N \times K}}\prod_{i \leq N}\exp\left(\frac{1}{T}\sum_{k \leq K}M_{ik}x_i^\top y_k\right) \\
+&= \sum_{c : \{1, \ldots, N\} \to \{1, \ldots, K\}}\prod_{i \leq N}\exp\left(\frac{1}{T}x_i^\top y_{c(i)}\right)\\
+&= \prod_{i \leq N}\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right).
+\end{align}
+% 
+
+If we apply this to the equation above, we get
+
+\begin{align}
+&Z_X\\
+ &= \alpha\int \exp\left(- \frac{N}{2T}\sum_{k \leq K}\left\|y_k\right\|^2\right)\prod_{i \leq N}\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right)d\mathbf{y}\\
+&= \alpha\int \exp\left(- \frac{N}{2T}\sum_{k \leq K}\left\|y_k\right\|^2\right)\exp\left(\log\left(\prod_{i \leq N}\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right)\right)\right)d\mathbf{y}\\
+&= \alpha\int \exp\left(- \frac{N}{2T}\sum_{k \leq K}\left\|y_k\right\|^2 + \sum_{i \leq N}\log\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right)\right)d\mathbf{y}\label{eq:monster_integral}
+\end{align}
+\end{proof}
+
+\section{The Laplace method}
+
+The integral in Equation~\ref{eq:monster_integral} is analytically intractable. However, it can be expressed in the form $\exp\left(-\frac{N}{T}f_X(y_1, \ldots, y_K)\right)$, where $f_X$ has a unique minimum at 0. This allows us to use what is called \emph{the Laplace method}, a method to approximate the integral with arbitrary precision as $\frac{N}{T} \to \infty$.
+
+Let $\mathbf{y}$ be the vector of real variables resulting from the concatenation of $y_1, y_2, \ldots, y_k$. Equation~\ref{eq:monster_integral} can then be rewritten as
+%
+\begin{equation}
+Z_X = e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\int \exp\left( - \frac{N}{T}f_X(\mathbf{y}) \right)d\mathbf{y},
+\end{equation}
+%
+where
+%
+\begin{equation}
+f_X(\mathbf{y}) = - \frac{1}{2}\sum_{k \leq K}\left\|y_k\right\|^2 + \frac{T}{N}\sum_{i \leq N}\log\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right).
+\end{equation}
+
+Recall now that $f_X(\mathbf{y})$'s second-order Taylor expansion at $\mathbf{y}^* \in \mathbb{R}^{KD}$ is given by
+%
+$$f_X(\mathbf{y}) \approx f_X(\mathbf{y}^*) + (\mathbf{y} - \mathbf{y}*)^\top \left.\frac{\partial f_X}{\partial \mathbf{y}}\right|_{\mathbf{y}^*} + (\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*),$$
+%
+where $\left.\frac{\partial f_X}{\partial \mathbf{y}}\right|_{\mathbf{y}^*}$ is $f_X$'s gradient evaluated at $\mathbf{y}^*$ and $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$ is $f_X$'s Hessian evaluated at $\mathbf{y}^*$.
+
+If we choose $\mathbf{y}^*$ to be $f_X's$' minimum, then this reduces to
+%
+$$f_X(\mathbf{y}) \approx f_X(\mathbf{y}^*) + (\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*).$$
+%
+
+\begin{exercise}
+Using this approximation, and assuming that $\mathbf{y}^*$ and that $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$ are given, show that
+%
+$$Z_X \approx \left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}} \left(2\pi\right)^{D/2}\left|\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right|^{-\frac{1}{2}}\exp\left(-\frac{1}{2T}-\frac{N}{T}f_X(\mathbf{y}^*)\right).$$
+%
+\end{exercise}
+
+\begin{proof}
+\begin{align*}
+Z_X &= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\int \exp\left( - \frac{N}{T}f_X(\mathbf{y}) \right)d\mathbf{y}\\
+&\approx e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\int \exp\left( - \frac{N}{T}\left(f_X(\mathbf{y}^*) + (\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*)\right) \right)d\mathbf{y}\\
+&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\int \exp\left((\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*)\right) d\mathbf{y}\\
+&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\int \exp\left(-\frac{1}{2}(\mathbf{y} - \mathbf{y}^*)^\top \left(-2\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right)(\mathbf{y} - \mathbf{y}^*)\right) d\mathbf{y}\\
+&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\left|2\pi\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}^{-1}\right|^{\frac{1}{2}}\\
+&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\left|2\pi\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}^{-1}\right|^{\frac{1}{2}}\\
+&= \left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}} \left(2\pi\right)^{D/2}\left|\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right|^{-\frac{1}{2}}\exp\left(-\frac{1}{2T}-\frac{N}{T}f_X(\mathbf{y}^*)\right).
+\end{align*}
+\end{proof}
+
+\begin{exercise}
+Show how to compute $\mathbf{y}^*$.
+\end{exercise}
+
+\begin{proof}
+We obtain $\mathbf{y}^*$ by solving
+%
+\begin{equation}
+\frac{\partial f_X}{\partial \mathbf{y}}= 0 \qquad \Leftrightarrow \qquad \frac{\partial f_X}{\partial y_k} = 0\text{, for all $k \leq K$}.
+\end{equation}
+%
+
+\begin{align*}
+\frac{\partial f_X}{\partial y_k} &= - \frac{1}{2}\frac{\partial f_X}{\partial y_k}\sum_{k \leq K}\left\|y_k\right\|^2 + \frac{T}{N}\sum_{i \leq N}\frac{\partial f_X}{\partial y_k}\log\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right)\\
+&= - y_k + \frac{T}{N}\sum_{i \leq N}\frac{\frac{1}{T}x_i\exp\left(\frac{1}{T}x_i^\top y_k\right)}{\sum_{k' \leq K}\exp\left(\frac{1}{T}x_i^\top y_{k'}\right)}\\
+\end{align*}
+%
+Hence, for $k \leq K$, $\frac{\partial f_X}{\partial y_k}= 0$ implies that 
+%
+$$y_k = \sum_{i \leq N}\frac{x_i\exp\left(\frac{1}{T}x_i^\top y_k\right)}{N\sum_{k' \leq K}\exp\left(\frac{1}{T}x_i^\top y_{k'}\right)}.$$
+%
+This transcendental equation, can be solved iteratively, using an EM-like procedure.
+\end{proof}
+
+\begin{exercise}
+Show how to compute $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$.
+\end{exercise}
+
+\begin{proof}
+Recall that for a function $g : \mathbb{R}^d \to \mathbb{R}$, the Hessian is defined as a matrix whose $(i,j)$ entry is $\frac{\partial^2 g}{\partial y_i \partial y_j}$. Hence, $\frac{\partial^2 f_X}{\partial \mathbf{y}^2}$ can be seen as an array of matrices as follows:
+%
+$$\frac{\partial^2 f_X}{\partial \mathbf{y}^2} = 
+\left(
+\begin{array}{ccccc}
+\frac{\partial^2 f_X}{\partial y_1 \partial y_1} && \ldots && \frac{\partial^2 f_X}{\partial y_1 \partial y_K}\\
+& \ddots & & \reflectbox{$\ddots$} & \\
+\vdots && \frac{\partial^2 f_X}{\partial y_k \partial y_\ell} && \vdots \\
+& \reflectbox{$\ddots$} & & \ddots & \\
+\frac{\partial^2 f_X}{\partial y_K \partial y_1} && \ldots && \frac{\partial^2 f_X}{\partial y_K \partial y_K}\\
+\end{array}
+\right).$$
+%
+Please be careful to observe that $\frac{\partial^2 f_X}{\partial y_k \partial y_\ell}$ is a \emph{matrix}! In particular, if $k = \ell$, then one can show that
+%
+$$\frac{\partial^2 f_X}{\partial y_k^2} = I - \frac{1}{TN}\sum_{i \leq N} x_i x_i^\top P_{ik}\left(1 - P_{ik}\right),$$
+%
+where 
+%
+$$P_{ik} = \frac{\exp\left(\frac{1}{T}x_i^\top y_k\right)}{\sum_k \exp\left(\frac{1}{T}x_i^\top y_k\right)}.$$
+When $k \neq \ell$, one can show that
+%
+$$\frac{\partial^2 f_X}{\partial y_k \partial y_\ell} = \frac{1}{TN}\sum_{i \leq N} x_i x_i^\top P_{ik}P_{i\ell}.$$
+%
+\end{proof}

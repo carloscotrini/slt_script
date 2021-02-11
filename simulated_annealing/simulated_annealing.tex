@@ -66,54 +66,79 @@ to ERM methods like K-means, as we will study in Chapter 3. Moreover,
 we will see that in several instances, SA can be improved to a more exact
 and simpler method, called \emph{deterministic annealing} (DA).
 
-\section{Sampling as a way to extract models from Gibbs distributions}
+\section{Applications of sampling}
 \label{sec:sampling}
 
-In many interesting cases in practice, $p(\cdot \mid X)$ is intractable. However, there
-are effective methods for sampling intractable distributions. Sampling gives
+Sampling gives
 us a way to explore and to choose a model from $p(\cdot \mid X)$, when $\mathcal{C}$ is a vector
 space, or at least a space that admits a notion of an average: draw a sample from $p(\cdot \mid X)$ and then propose the average of that sample as a model.
-Figure~\ref{fig:two_observations_sa} illustrates two observations from the random array problem
-from Section~\ref{sec:random_array}. Here, the array has length 100. The upper graphic in Figure~\ref{fig:means_pas_two_arrays} illustrates the mean of the two Gibbs distributions induced by
-$R(\cdot, X')$ and $R(\cdot, X'')$ as a function of the temperature. Observe that in
-this case, the mean would then be the model that we would choose, if we
-could only access $p(\cdot \mid X')$ or $p(\cdot \mid X'')$ via sampling. The lower graphic in Figure~\ref{fig:means_pas_two_arrays}
-illustrates the kernel posterior agreement between the two observations as
-a function of the temperature.
+%
+%\todo{I don't see the point of the rest of this section}
+%Figure~\ref{fig:two_observations_sa} illustrates two observations from the random array problem
+%from Section~\ref{sec:random_array}. Here, the array has length 100. The upper graphic in Figure~\ref{fig:means_pas_two_arrays} illustrates the mean of the two Gibbs distributions induced by
+%$R(\cdot, X')$ and $R(\cdot, X'')$ as a function of the temperature. Observe that in
+%this case, the mean would then be the model that we would choose, if we
+%could only access $p(\cdot \mid X')$ or $p(\cdot \mid X'')$ via sampling. The lower graphic in Figure~\ref{fig:means_pas_two_arrays}
+%illustrates the kernel posterior agreement between the two observations as
+%a function of the temperature.
+%
+%\begin{figure}[hbtp]
+%\centering
+%\includegraphics[width=\textwidth]{\dir/two_observations}
+%\caption{}
+%\label{fig:two_observations_sa}
+%\end{figure}
+%
+%\begin{figure}[hbtp]
+%\centering
+%\includegraphics[width=\textwidth]{\dir/means_pas_two_arrays}
+%\caption{}
+%\label{fig:means_pas_two_arrays}
+%\end{figure}
+%
+%As $T \to \infty$, the mean of the two Gibbs distributions lie near to 50. This
+%is because at a sufficiently high temperature, the Gibbs distributions look
+%like uniform distributions. As the temperatures start decreasing, the distributions
+%concentrate more and more on the array entries with the lowest
+%values. Such values are in the first half of the array. This is why the means
+%decrease as the temperature decreases from 120 to 20 for the two Gibbs
+%distributions. However, the means start increasing when the temperature
+%gets below 20. This is because the Gibbs distributions start concentrating
+%on the arrays' minima. In particular, when the temperature approaches
+%zero, the distributions concentrate almost entirely on the minima of the
+%corresponding arrays. The combined Gibbs distribution has a similar behavior.
+%
+%When searching for a good model in the Gibbs distribution, it is important
+%to choose an adequate value of the temperature. We argue that
+%such a value can be computed by maximizing the kernel posterior agreement
+%between two given observations. Observe in the lower graphic of
+%Figure~\ref{fig:means_pas_two_arrays} that the temperature at which the kernel posterior agreement is
+%maximum is very close to the temperature at which the means of the two Gibbs distributions are minimized.
 
-\begin{figure}[hbtp]
-\centering
-\includegraphics[width=\textwidth]{\dir/two_observations}
-\caption{}
-\label{fig:two_observations_sa}
-\end{figure}
+Instead of sampling to compute a single model, one can also use sampling to estimate the probability of an event of interest. Consider the case of clustering. Assume that you have a sample $X$ of points and that you have calculated the Gibbs distribution $p(\cdot \mid X)$. 
 
-\begin{figure}[hbtp]
-\centering
-\includegraphics[width=\textwidth]{\dir/means_pas_two_arrays}
-\caption{}
-\label{fig:means_pas_two_arrays}
-\end{figure}
+Assume now that you want to estimate the probability $\prob(x \in C_k \mid X)$ that a given point $x$ is in a particular cluster $C_k$. We can estimate this probability as follows:
+%
+\begin{equation}
+\prob\left(x \in C_k \mid X\right) = \sum_{c \in \mathcal{C}} \prob(x \in C_k \mid c) p(c \mid X).
+\end{equation}
 
-As $T \to \infty$, the mean of the two Gibbs distributions lie near to 50. This
-is because at a sufficiently high temperature, the Gibbs distributions look
-like uniform distributions. As the temperatures start decreasing, the distributions
-concentrate more and more on the array entries with the lowest
-values. Such values are in the first half of the array. This is why the means
-decrease as the temperature decreases from 120 to 20 for the two Gibbs
-distributions. However, the means start increasing when the temperature
-gets below 20. This is because the Gibbs distributions start concentrating
-on the arrays' minima. In particular, when the temperature approaches
-zero, the distributions concentrate almost entirely on the minima of the
-corresponding arrays. The combined Gibbs distribution has a similar behavior.
-
-When searching for a good model in the Gibbs distribution, it is important
-to choose an adequate value of the temperature. We argue that
-such a value can be computed by maximizing the kernel posterior agreement
-between two given observations. Observe in the lower graphic of
-Figure~\ref{fig:means_pas_two_arrays} that the temperature at which the kernel posterior agreement is
-maximum is very close to the temperature at which the means of the two Gibbs distributions are minimized.
-
+However, as we will see in Chapter~\ref{ch:da}, this distribution is computationally intractable. We can easily approximate this probability if we have a sample $c_1, c_2, \ldots, c_m$ from the Gibbs distribution as follows:
+%
+\begin{equation}
+\prob\left(x \in C_k \mid X\right) \approx \sum_{t \leq \ell} \frac{1}{m}\mathbf{1}\{c_t(x) = C_k\},
+\end{equation}
+%
+where
+%
+\begin{equation}
+\mathbf{1}\{c_t(x) = C_k\}
+\begin{cases}
+1 & \text{if $c_t$ assigns $x$ to cluster $C_k$}\\
+0 & \text{otherwise.}
+\end{cases}
+\end{equation}
+%
 
 \section{MCMC sampling}
 \label{sec:mcmc}
@@ -129,10 +154,7 @@ learning'' or Murphy's ``Machine learning: a probabilistic perspective''.
 Given a distribution $p$, MCMC sampling is usually done by defining a
 parameterized family of conditional \emph{transition distributions} $\pi(\cdot \mid c)$, for an
 arbitrary $c \in \mathcal{C}$. This distribution gives rise to a graph $G$ whose vertices
-are $\mathcal{C}$ and where there is an edge between any two $c, c' \in \mathcal{C}$ iff $\pi(c' \mid c) > 0$.
-MCMC sampling then proceeds to produce samples iteratively as follows.
-First, pick an arbitrary $C_0 \in \mathcal{C}$. Then for $t = 1, 2, \ldots$, sample $C_t$ from $\pi\left(\cdot \mid C_{t-1}\right)$. The samples eventually look like samples from $p$ if the conditions
-below are met.
+are $\mathcal{C}$ and where there is an edge between any two $c, c' \in \mathcal{C}$ iff $\pi(c' \mid c) > 0$. Your task is then to find a family $\{\pi(\cdot \mid c)\}_{c \in \mathcal{C}}$ fulfilling the requirements below.
 
 \begin{theorem}
 Let $p$ be a distribution over $\mathcal{C}$ and let $\{\pi(\cdot \mid c)\}_{c \in \mathcal{C}}$ be a parameterized
@@ -158,6 +180,10 @@ $C_t$'s distribution is given by $\pi(\cdot \mid C_{t-1})$. Then, for $c \in \ma
 The proof is found in standard probability textbooks and is studied in
 the course \emph{probabilistic artificial intelligence}.
 
+MCMC sampling exploits this theorem to efficiently produce samples from $p$ as follows. 
+First, pick an arbitrary $C_0 \in \mathcal{C}$. Then for $t = 1, 2, \ldots$, sample $C_t$ from $\pi\left(\cdot \mid C_{t-1}\right)$. The samples eventually look like samples from $p$ if the conditions
+below are met.
+
 \subsection{The Metropolis-Hastings trick}
 
 MCMC gives a simpler recipe to sample an intractable distribution $p$: just
@@ -170,8 +196,9 @@ and Hastings that easily yields such a transition distribution.
 The trick works for distributions where the intractability comes from
 the normalization constant, which is often the case in Bayesian methods
 and in our Gibbs distributions. So let us assume that $p(c) \propto f(c)$, where
-$f(c)$ is tractable. The trick consists of two steps:
+$f(c)$ is tractable.
 
+\begin{definition}{Metropolis-Hastings trick}
 \begin{enumerate}
 \item Define a parameterized family of conditional proposal distributions
 $\{q(\cdot \mid c) \mid c \in \mathcal{C}\}$ such that $G_q$ is connected and every vertex in $G_q$
@@ -183,9 +210,8 @@ A(c', c) := \min\left\{1, \frac{q(c \mid c')p(c')}{q(c' \mid c)p(c)}\right\} = \
 \end{equation}
 %
 \end{enumerate}
-
-\begin{exercise}
-Let $c \in \mathcal{C}$ and
+%
+The transition distribution is then
 %
 \begin{equation}
 \pi(c' \mid c) := \begin{cases}
@@ -194,13 +220,20 @@ q(c' \mid c)A(c', c) & \text{if $c \neq c'$ and}\\
 \end{cases}
 \end{equation}
 %
+\end{definition}
+
+\begin{exercise}
 Show that $\pi(\cdot \mid c)$ fulfils the requirements from Theorem 1.
 \end{exercise}
+
+\begin{definition}
+The algorithm that performs MCMC sampling using the Metropolis-Hastings trick is called \emph{Metropolis-Hastings algorithm}. In the particular case when $q(c | c') = q(c' | c)$, for $c, c' \in \mathcal{C}$, the algorithm is called \emph{Metropolis algorithm}.
+\end{definition}
 
 \begin{exercise}
 In our context, we usually choose proposal distributions $q(\cdot \mid \cdot)$
 that are symmetric. That is, $q(c' \mid c) = q(c \mid c')$ for $c, c' \in \mathcal{C}$. Show that,
-in this case, the Metropolis-Hastings transition distribution $\pi(\cdot \mid c)$ for a
+in this case, the Metropolis transition distribution $\pi(\cdot \mid c)$ for a
 Gibbs distribution $p(c \mid X) \propto \exp\left(-\frac{1}{T}R(c, X)\right)$ simplifies to the following:
 
 \begin{itemize}
@@ -396,6 +429,7 @@ annealing.
 \State \quad $\epsilon > 0$ be a temperature threshold.
 \State \quad $R(\cdot, X)$ be a cost function,
 \State \quad \texttt{reduce} be a function for decreasing the temperature.
+\State \quad $N \in \mathbb{N}$ be the number of samples drawn before decreasing the temperature.
 \State \quad $q(\cdot \mid c)$, for $c \in \mathcal{C}$, a family of proposal distributions.
 \State
 \Function{SimAnn}{$\epsilon$, $R(\cdot, X)$, \texttt{reduce}, $\{q(\cdot \mid c) \mid c \in \mathcal{C}\}$}
@@ -434,6 +468,16 @@ ERM schemes like gradient descent, as they do not have procedures
 to escape bad local minima. Second, the sampling nature of simulated annealing
 gives us not one but many solutions that are in the ``neighborhood''
 of the empirical risk minimizer.
+
+\section{Conclusion}
+
+Computing Gibbs distributions induced by practical cost functions is intractable. The intractability comes from the normalization constant, as it often requires to sum over an exponentially large hypothesis class or to integrate a transcendental function.
+
+This chapter presents how to use sampling to handle this intractability. A sample of models drawn from the Gibbs distribution can be used to estimate one single model or to estimate the probability of an event of interest.
+
+We then studied a popular sampling method, MCMC, and derived from it the Metropolis(-Hastings) algorithm, a convenient and straightforward procedure for sampling distributions with intractable normalization constants.\looseness=-1
+
+We then observed, that these algorithms often get stuck in local minima when sampling from Gibbs distributions. This can be problematic when the cost function underlying the Gibbs distribution is non-convex and has many local minima. To overcome this issue, simulated annealing was proposed. Simulated annealing is obtained from the Metropolis algorithm by letting the temperature decrease during the sampling procedure. Simulated annealing has been successful for optimizing non-convex cost functions. By initially sampling at high temperatures and then decreasing the temperature, simulated annealing manages to escape bad local minima and ``get stuck'' in better quality minima of the cost function.
 
 %It is very difficult to diagnose when a Markov chain has burned in.
 %Murphy's 24.4.2

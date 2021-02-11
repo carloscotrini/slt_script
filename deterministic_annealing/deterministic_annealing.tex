@@ -1,7 +1,7 @@
 \chapter{Deterministic annealing}
+\label{ch:da}
 
-\section{The problem of centroid-based cluster-
-ing}
+\section{The problem of centroid-based clustering}
 \label{sec:problem}
 
 In this chapter, we consider the problem of centroid-based clustering. In
@@ -139,7 +139,7 @@ we compute the centroids that maximize the entropy of $p(\cdot \mid \theta, X)$.
 section, we use $C$ to denote a random cluster assignment whose distribution
 is $p(\cdot \mid \theta, X)$.
 
-We assume here that $\mathbb{E}_{C \sum p(\cdot \mid \theta, X)} = \mu$, for some fixed $\mu \in \mathbb{R}^+$ and that the temperature hyper-parameter
+We assume here that $\mathbb{E}_{C} \left[R(C, X)\right] = \mu$, for some fixed $\mu \in \mathbb{R}^+$ and that the temperature hyper-parameter
 of $p(\cdot \mid \theta, X)$ depends exclusively on $\mu$.
 
 \begin{lemma}

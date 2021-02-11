@@ -21,12 +21,16 @@ effectively diagnose pneumonia on patients that were not part of the initial
 set of patients. We can call this process \emph{machine learning}. The act of
 computing the model is called \emph{training.}
 
-\section*{What is statistical learning}
+\section*{What is statistical learning?}
 
 \emph{Statistical learning} is a subfield of machine learning where the algorithm
-trains models by directly minimizing a notion of cost.
+trains models by searching for a model that minimizes a given cost function. An example
+of statistical learning is linear regression. You compute a line that models the behavior of 
+an observed set of points by searching for the line that minimizes the sum of the squared distances
+from each point to the line.
 
-A popular method of statistical learning is \emph{empirical risk minimization.}
+A popular method of statistical learning is \emph{empirical risk minimization},
+which we illustrate with the example of pneumonia.
 In this method, we first define a \emph{cost function} $R$ that measures (i) the
 cost of misdiagnosing pneumonia and (ii) the cost of failing to diagnose
 pneumonia. Observe that the two costs may not necessarily be the same.
@@ -83,13 +87,16 @@ entropy in the case of clustering. In April, we study other approaches
 for clustering and show their connection to maximum entropy. In May, we
 study some popular techniques for approximating intractable distributions that arise when following the maximum-entropy approach. Finally, we propose
 information-theoretic foundations for posterior agreement.
+\looseness=-1
 
 %This is a \emph{theoretical}\footnote{Actually, if you are from math or physics, this is an applied course. The thing is that our target audience are computer scientists.} course. 
-The course is not for the fainthearted. In addition to the lectures, there are coding exercises that are time demanding. The exercises and the exam ask you to do proofs and do math at a graduate level. We use variational and matrix calculus, multivariate probability theory, and information theory to demonstrate theoretical results. If you are not familiar with some of these subjects, this is fine\footnote{For SLT 2020, we had a bachelor student who did not have previous exposure to data science and still passed the course with the highest grade among all 70 students who managed to finish, so it is possible to take the course with no knowledge of these subjects. However, the student devoted a huge amount of time for this course.}, but you are expected to learn from these subjects on your own.
+The course is not for the fainthearted. In addition to the lectures, there are coding exercises that are time consuming. The pen-and-paper exercises and the exam ask you to do math at a graduate level. We use variational and matrix calculus, multivariate probability theory, and information theory to demonstrate theoretical results. If you are not familiar with some of these subjects, this is fine\footnote{For SLT 2020, we had a bachelor student who did not have previous exposure to data science and still passed the course with the highest grade among all 70 students who managed to finish, so it is possible to take the course with no knowledge of these subjects. However, the student devoted a huge amount of time for this course.}, but you are expected to learn from these subjects on your own.
+\looseness=-1
 
-The notes are planned to be completed throughout the next years. For
-this year, you can expect notes presenting maximum entropy and posterior
+This script is planned to be completed throughout the next years. For
+this year, the script presents maximum entropy and posterior
 agreement.
+\looseness=-1
 
 \section*{Acknowledgements and contributions}
 
@@ -118,9 +125,9 @@ including a detailed recap on Shannon's channel coding theorem.
 
 \section*{Remarks}
 
-This is the first draft of this new version of the script. Therefore, you
+This is the first draft of this new version of the script and it is an independent and voluntary attempt to provide more supporting material to you. Therefore, you
 are kindly asked to be patient to typos and terse explanations. This does
 not mean, however, that you have to deal with them. You are warmly
-encouraged to report in Piazza typos that you encounter and ask whenever
+encouraged to report in Piazza or in the git repo any typos that you encounter and ask whenever
 some part is unclear to you. I'd be very happy to discuss them with you
 and decide how to improve the script.
