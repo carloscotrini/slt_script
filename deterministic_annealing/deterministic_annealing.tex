@@ -66,7 +66,9 @@ Finally, in Section~\ref{sec:da_pa}, we exploit this behavior and posterior agre
 \section{Tractability of the Gibbs distribution}
 \label{sec:gibbs_factorizes_da}
 
-We assume that our hypothesis class $\mathcal{C}$ is the set of all cluster assignments $c : \{1, \ldots, N\} \to \{1, \ldots, K\}$.\todo{Observe that $c$'s domain must be the set of numbers up to $N$ and not an Euclidean domain. Otherwise, the Gibbs distribution is a continuous distribution!} We define then the family of Gibbs distributions
+We assume that our hypothesis class $\mathcal{C}$ is the set of all cluster assignments $c : \{1, \ldots, N\} \to \{1, \ldots, K\}$.
+%\todo{Observe that $c$'s domain must be the set of numbers up to $N$ and not an Euclidean domain. Otherwise, the Gibbs distribution is a continuous distribution!}
+We define then the family of Gibbs distributions
 induced by the $K$-means cost function as all distributions over $\mathcal{C}$ of the
 form
 %
@@ -81,18 +83,18 @@ The centroids are chosen to be hyper-parameters just for convenience.
 One could treat them as part of the hypothesis class, but this substantially complicates the analysis.
 
 \begin{theorem}
-A Gibbs distribution induced by the K-means cost function
+A Gibbs distribution induced by the $K$-means cost function
 factorizes as follows:
 %
 \begin{equation}
-p(c \mid \theta, X) = \prod_{i \leq N} p(c(i) \mid \theta, X),
+p(c \mid \theta, X) = \prod_{i \leq N} p(i, c(i) \mid \theta, X),
 \label{eq:gibbs_distr_factorizes}
 \end{equation}
 %
 where
 %
 \begin{equation}
-p(c(i) \mid \theta, X) \propto \exp\left(-\frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right).
+p(i, k \mid \theta, X) \propto \exp\left(-\frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right).
 \label{eq:gibbs_factors_da}
 \end{equation}
 %
@@ -124,12 +126,12 @@ Putting these results together yields that
 \begin{align}
 p(c \mid \theta, X) &= \frac{\prod_{i \leq N}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)}{\prod_{i \leq N}\sum_{k \leq K}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)}\\
 &= \prod_{i \leq N}\frac{\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)}{\sum_{k \leq K}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)}\\
-&= \prod_{i \leq N}p(c(i) \mid \theta, X).
+&= \prod_{i \leq N}p(i, c(i) \mid \theta, X).
 \end{align}
 \end{proof} 
 
 Theorem~\ref{thm:gibbs_factorizes} shows that we can compute $p(c \mid \theta, X)$ in just $O(NK)$-time.
-You just have to compute $\exp\left(- \frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)$, which is $O(1)$-time, for $i \leq N$ and $k \leq K$. Hence, computing $p(c(i) \mid \theta, X)$ takes $O(K)$-time, for $i \leq N$, yielding a total computing time of $O(NK)$.
+You just have to compute $\exp\left(- \frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)$, which is $O(1)$-time, for $i \leq N$ and $k \leq K$. Hence, computing $p(i, c(i) \mid \theta, X)$ takes $O(K)$-time, for $i \leq N$, yielding a total computing time of $O(NK)$.
 
 \section{Computing the centroids}
 \label{sec:computing_centroids_da}
@@ -178,7 +180,7 @@ H[p(\cdot \mid \theta, X)] = \text{const} + \log \sum_{c \in \mathcal{C}} \exp\l
 Take the derivative with respect to on both sides and show that
 %
 \begin{equation}
-\frac{\partial H[p\left(\cdot \mid \theta, X\right)]}{\partial \theta} = \mathbb{E}_{C \sim p(\cdot \mid \theta^*, X)} \left[\frac{\partial}{\partial \theta}R(C, \theta, X)\right].
+\frac{\partial H[p\left(\cdot \mid \theta, X\right)]}{\partial \theta} = \mathbb{E}_{C \sim p(\cdot \mid \theta, X)} \left[\frac{\partial}{\partial \theta}R(C, \theta, X)\right].
 \end{equation}
 %
 This equality yields the desired result.
@@ -215,16 +217,16 @@ an exercise.
 The set $\theta^*$ of centroids that maximize the entropy of $p(\cdot \mid \theta, X)$ must satisfy the following conditions.
 %
 \begin{equation}
-\theta^*_k = \frac{\sum_{i \leq N} x_i \prob\left(C(i) = k \mid \theta^*, X\right)}{\sum_{i \leq N} \prob\left(C(i) = k \mid \theta^*, X\right)},\text{ for $k \leq K$},
+\theta^*_k = \frac{\sum_{i \leq N} p\left(i,k \mid \theta^*, X\right)x_i}{\sum_{i \leq N} p\left(i,k \mid \theta^*, X\right)},\text{ for $k \leq K$},
 \label{eq:thm_stationarity_conds_centroids_da}
 \end{equation}
 %
-where
-%
-\begin{equation}
-\prob\left(C(i) = k \mid \theta^*, X\right) \propto \exp\left(- \frac{1}{T}\left\|x_i - \theta^*_k\right\|^2\right).
-\end{equation}
-%
+%where
+%%
+%\begin{equation}
+%\prob\left(C(i) = k \mid \theta^*, X\right) \propto \exp\left(- \frac{1}{T}\left\|x_i - \theta^*_k\right\|^2\right).
+%\end{equation}
+%%
 \end{theorem}
 
 \begin{proof}
@@ -246,7 +248,7 @@ Apply now linearity of the expectation and the fact that $\mathbb{E}\left[\mathb
 \theta^*_k \sum_{i \leq N} \prob\left(C(i) = k \mid \theta^*, X\right) - \sum_{i \leq N}x_i \prob\left(C(i) = k \mid \theta^*, X\right) = 0.
 \end{equation}
 
-The desired condition follows from this equation.
+The desired condition follows from this equation and the fact that $\prob\left(C(i) = k \mid \theta^*, X\right) = p(i, k \mid \theta^*, X)$.
 \end{proof}
 
 Unfortunately, Equation~\ref{eq:thm_stationarity_conds_centroids_da} does not give us a closed formula to compute $\theta^*$. We can still attempt to estimate $\theta^*$ iteratively, with the following
@@ -257,7 +259,7 @@ procedure.
 \item Set $t \gets t + 1$ and
 %
 \begin{equation}
-\theta^*_{t+1} \gets \frac{\sum_{i \leq N} \prob\left(C(i) = k \mid \theta^*_t, X\right)x_i}{\prob\left(C(i) = k \mid \theta^*_t, X\right)}.
+\theta^*_{t+1} \gets \frac{\sum_{i \leq N} p\left(i, k \mid \theta^*_t, X\right)x_i}{p\left(i,k \mid \theta^*_t, X\right)}.
 \end{equation}
 %
 This procedure converges to a local maximum of $H[p(\cdot \mid \theta, X)]$.
@@ -320,13 +322,13 @@ random variables makes the whole procedure intractable.
 \While{$T > \epsilon$}
 \Repeat
 \State $\theta_0 \gets \theta$
-\State Compute $\prob\left(C(i) = k \mid \theta_0, X\right)$, for $i \leq N$ and $k \leq K$
-\State $\displaystyle \theta \gets \frac{\sum_{i \leq N} \prob\left(C(i) = k \mid \theta_0, X\right) x_i}{\sum_{i \leq N} \prob\left(C(i) = k \mid \theta_0, X\right)}$
+\State Compute $p\left(i,k \mid \theta_0, X\right)$, for $i \leq N$ and $k \leq K$
+\State $\displaystyle \theta \gets \frac{\sum_{i \leq N} p\left(i,k \mid \theta_0, X\right) x_i}{\sum_{i \leq N} p\left(i,k \mid \theta_0, X\right)}$
 \Until{$\texttt{close}\left(\theta, \theta_0\right)$}
 \State Add a small amount of noise to each centroid in $\theta$.
 \State $T \gets \texttt{reduce}(T)$
 \EndWhile
-\State \textbf{return} $\theta$, $\{\prob\left(C(i) = k \mid \theta, X\right) \mid i \leq N, k \leq K\}$
+\State \textbf{return} $\theta$, $\{p\left(i,k \mid \theta, X\right) \mid i \leq N, k \leq K\}$
 \EndFunction
 \end{algorithmic}
 \caption{Deterministic annealing}
@@ -419,11 +421,11 @@ sequence of lemmas whose proofs are left as exercises.
 
 \begin{lemma}
 \begin{equation}
-\lim_{T \to \infty} \prob\left(C(i) = k \mid \theta, X\right) = \frac{1}{K}.
+\lim_{T \to \infty} p\left(i,k \mid \theta, X\right) = \frac{1}{K}.
 \end{equation}
 
 \begin{equation}
-\lim_{T \to 0} \prob\left(C(i) = k \mid \theta, X\right) = \begin{cases}
+\lim_{T \to 0} \prob\left(i,k \mid \theta, X\right) = \begin{cases}
 1 & \text{ if $\theta_k$ is the centroid closest to $x_k$ and}\\
 0 & \text{ otherwise}.
 \end{cases}
@@ -501,7 +503,7 @@ A_{ik} = (x_i - \theta_k)\left(1 + \frac{2}{T}x_i^\top \theta_i\right) \qquad \t
 Start from
 %
 \begin{equation}
-\frac{\partial F}{\partial \theta_k} = - \frac{2}{T} \sum_{i \leq N} \prob\left(C(i) = k \mid \theta, X\right)(x_i - \theta_k).
+\frac{\partial F}{\partial \theta_k} = - \frac{2}{T} \sum_{i \leq N} p\left(i,k \mid \theta, X\right)(x_i - \theta_k).
 \label{eq:start_eq_da}
 \end{equation}
 %
@@ -521,7 +523,7 @@ Hence,
 Therefore,
 %
 \begin{align}
-\prob\left(C(i) = k \mid \theta, X\right) &= \frac{\exp\left(-\frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{k'}\right\|^2\right)}\\
+p\left(i,k \mid \theta, X\right) &= \frac{\exp\left(-\frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{k'}\right\|^2\right)}\\
 &\approx \frac{\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_k\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}\\
 &= \frac{\left(1 + \frac{2}{T}x_i^\top \theta_{k}\right)}{\sum_{k' \leq K}\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}.\label{eq:simplified_factor_prob}
 \end{align}
@@ -637,7 +639,7 @@ tractable.
 Show that
 %
 \begin{equation}
-\sum_{c}p(c \mid X') p(c \mid X'') = \prod_{i \leq N}\sum_{k \leq K}\prob\left(C(i) = k \mid X'\right)\prob\left(C(i) = k \mid X''\right).
+\sum_{c}p(c \mid X') p(c \mid X'') = \prod_{i \leq N}\sum_{k \leq K}p\left(i,k \mid X'\right)p\left(i,k \mid X''\right).
 \end{equation}
 %
 Show also that computing this takes $O(NK)$-time.
