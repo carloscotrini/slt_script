@@ -145,17 +145,11 @@ We assume here that $\mathbb{E}_{C} \left[R(C, X)\right] = \mu$, for some fixed 
 of $p(\cdot \mid \theta, X)$ depends exclusively on $\mu$.
 
 \begin{lemma}
-If, for a set $\theta^*$ of centroids,
 %
 \begin{equation}
-\frac{\partial H \left[p(\cdot \mid \theta, X)\right]}{\partial \theta} \Bigr|_{\theta^*} = 0,
+\frac{\partial H \left[p(\cdot \mid \theta, X)\right]}{\partial \theta} = \mathbb{E}_{C \sim p(\cdot \mid \theta, X)}\left[\frac{\partial}{\partial \theta}R(C, \theta, X)\right], \text{ for $k \leq K$}.
 \end{equation}
 %
-then
-%
-\begin{equation}
-\mathbb{E}_{C \sim p(\cdot \mid \theta, X)}\left[\frac{\partial}{\partial \theta}R(C, \theta, X)\Bigr|_{\theta^*}\right] = 0.
-\end{equation}
 \label{lem:stationarity_condition}
 \end{lemma}
 
@@ -177,13 +171,13 @@ respect to $\theta$. Moreover, the second term does not depend on the random var
 H[p(\cdot \mid \theta, X)] = \text{const} + \log \sum_{c \in \mathcal{C}} \exp\left(- \frac{1}{T}R(c, \theta, X)\right).
 \end{equation}
 %
-Take the derivative with respect to on both sides and show that
+Take the derivative with respect to $\theta$ and demonstrate the desired result.
 %
-\begin{equation}
-\frac{\partial H[p\left(\cdot \mid \theta, X\right)]}{\partial \theta} = \mathbb{E}_{C \sim p(\cdot \mid \theta, X)} \left[\frac{\partial}{\partial \theta}R(C, \theta, X)\right].
-\end{equation}
-%
-This equality yields the desired result.
+%\begin{equation}
+%\frac{\partial H[p\left(\cdot \mid \theta, X\right)]}{\partial \theta_k} = \mathbb{E}_{C \sim p(\cdot \mid \theta, X)} \left[\frac{\partial}{\partial \theta_k}R(C, \theta, X)\right], \text{ for $k \leq K$}.
+%\end{equation}
+%%
+%This equality yields the desired result.
 \end{proof}
 
 For an event $A$, we now denote by $\mathbf{1}{A}$ the indicator function. That is,
@@ -230,25 +224,29 @@ The set $\theta^*$ of centroids that maximize the entropy of $p(\cdot \mid \thet
 \end{theorem}
 
 \begin{proof}
-If $\theta^*$ maximizes the entropy of $p(\cdot \mid \theta, X)$, then, by Lemma~\ref{lem:stationarity_condition},
+In order to compute $\theta^*$, our plan is to solve the equations
 %
 \begin{equation}
-\mathbb{E}_{C \sim p(\cdot \mid \theta^*, X)}\left[\frac{\partial}{\partial \theta} R(C, \theta, X)\Bigr|_{\theta^*}\right] = 0.
+\frac{\partial H \left[p(\cdot \mid \theta, X)\right]}{\partial \theta_k} = 0, \text{ for $k \leq K$}.
 \end{equation}
 
-Plugging Equation~\ref{eq:deriv_cost_fun_da} in the equation above yields that
+So we start by applying Lemma~\ref{lem:stationarity_condition} on the left-hand side and then plugging Equation~\ref{eq:deriv_cost_fun_da}. This results in the following equations:
 %
 \begin{equation}
-\mathbb{E}_{C \sim p(\cdot \mid \theta^*, X)}\left[\theta^*_k \sum_{i \leq N} \mathbf{1}\left\{C(i) = k\right\} - \sum_{i \leq N} x_i \mathbf{1}\left\{C(i) = k\right\}\right] = 0.
+\mathbb{E}_{C \sim p(\cdot \mid \theta, X)}\left[\theta_k \sum_{i \leq N} \mathbf{1}\left\{C(i) = k\right\} - \sum_{i \leq N} x_i \mathbf{1}\left\{C(i) = k\right\}\right] = 0, \text{ for $k \leq K$}.
 \end{equation}
 %
 Apply now linearity of the expectation and the fact that $\mathbb{E}\left[\mathbf{1}A\right] = \prob\left(A\right)$ to get that
 %
 \begin{equation}
-\theta^*_k \sum_{i \leq N} \prob\left(C(i) = k \mid \theta^*, X\right) - \sum_{i \leq N}x_i \prob\left(C(i) = k \mid \theta^*, X\right) = 0.
+\theta_k \sum_{i \leq N} p\left(C(i) = k \mid \theta, X\right) - \sum_{i \leq N}x_i \prob\left(C(i) = k \mid \theta, X\right) = 0, \text{ for $k \leq K$}.
 \end{equation}
 
-The desired condition follows from this equation and the fact that $\prob\left(C(i) = k \mid \theta^*, X\right) = p(i, k \mid \theta^*, X)$.
+The desired condition follows from this equation and the fact that 
+%
+\begin{equation}
+\prob\left(C(i) = k \mid \theta, X\right) = p(i, k \mid \theta, X).
+\end{equation}
 \end{proof}
 
 Unfortunately, Equation~\ref{eq:thm_stationarity_conds_centroids_da} does not give us a closed formula to compute $\theta^*$. We can still attempt to estimate $\theta^*$ iteratively, with the following
