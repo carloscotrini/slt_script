@@ -221,6 +221,7 @@ The set $\theta^*$ of centroids that maximize the entropy of $p(\cdot \mid \thet
 %\prob\left(C(i) = k \mid \theta^*, X\right) \propto \exp\left(- \frac{1}{T}\left\|x_i - \theta^*_k\right\|^2\right).
 %\end{equation}
 %%
+\label{thm:centroid_stationarity_cond}
 \end{theorem}
 
 \begin{proof}
@@ -253,11 +254,11 @@ Unfortunately, Equation~\ref{eq:thm_stationarity_conds_centroids_da} does not gi
 procedure.
 
 \begin{enumerate}
-\item Set $t \gets 0$ and $\theta^*_t$ to an arbitrary value.
+\item Set $t \gets 0$ and $\theta^(t)$ to an arbitrary value.
 \item Set $t \gets t + 1$ and
 %
 \begin{equation}
-\theta^*_{t+1} \gets \frac{\sum_{i \leq N} p\left(i, k \mid \theta^*_t, X\right)x_i}{p\left(i,k \mid \theta^*_t, X\right)}.
+\theta^{(t+1)} \gets \frac{\sum_{i \leq N} p\left(i, k \mid \theta^{(t)}, X\right)x_i}{p\left(i,k \mid \theta^{(t)}, X\right)}.
 \end{equation}
 %
 This procedure converges to a local maximum of $H[p(\cdot \mid \theta, X)]$.
@@ -382,6 +383,7 @@ There seems to be now 5 centroids. In Figure~\ref{fig:da_mid2_temp} we have a lo
 temperature and now 7 apparent centroids. Finally, in Figure~\ref{fig:da_low_temp}, all 9
 centroids are at different locations and close to the means of the Gaussian
 mixture.
+
 We now investigate this behavior analytically. We do this through a
 sequence of lemmas whose proofs are left as exercises.
 
@@ -415,9 +417,7 @@ sequence of lemmas whose proofs are left as exercises.
     \caption{}\label{fig:da_phase_trans}
 \end{figure}
 
-\subsection{There is only one cluster at a high temperature}
-
-\begin{lemma}
+\begin{theorem}
 \begin{equation}
 \lim_{T \to \infty} p\left(i,k \mid \theta, X\right) = \frac{1}{K}.
 \end{equation}
@@ -428,18 +428,29 @@ sequence of lemmas whose proofs are left as exercises.
 0 & \text{ otherwise}.
 \end{cases}
 \end{equation}
+
+Furthermore, when $T \to \infty$, the set $\theta^\infty$ of centroids that maximize the entropy of $H\left[p\left(\cdot \mid \theta, X\right)\right]$ contains only the sample mean of all points in $X$.
 \label{lem:da_extreme_temps}
-\end{lemma}
+\end{theorem}
 
 \begin{proof}
-This is a consequence of Exercise~\ref{ex:gibbs_dist_extreme_temps}.
+This is a consequence of Exercise~\ref{ex:gibbs_dist_extreme_temps} and Theorem~\ref{thm:centroid_stationarity_cond}.
 \end{proof}
+
+\begin{theorem}
+At $T = 2\lambda$, there is a transition from one to several clusters, where $\lambda$ is the maximum eigenvalue of the sample covariance matrix of $X$. This is the matrix $\frac{1}{n}XX^\top$, where $X$ is seen as a matrix whose columns are all points in the observation.
+\label{thm:critical_temp_da}
+\end{theorem}
+
+The rest of this section is devoted to prove lemmas that will help prove
+this theorem.
+
 
 \begin{lemma}
 For $R(\cdot, \theta, X)$, the $K$-means cost function, maximizing $H[p(\cdot \mid \theta, X)]$ with respect to $\theta$ is equivalent to minimizing
 %
 \begin{equation}
-\mathcal{F}(\theta, X) := -T \sum_{i \leq N}\log \left(\sum_{k \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)\right).
+F(\theta, X) := -T \sum_{i \leq N}\log \left(\sum_{k \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)\right).
 \label{eq:gibbs_free_energy_da}
 \end{equation}
 %
@@ -450,18 +461,10 @@ For $R(\cdot, \theta, X)$, the $K$-means cost function, maximizing $H[p(\cdot \m
 The proof is similar to that of Lemma~\ref{lem:stationarity_condition} and involves Theorem~\ref{thm:gibbs_factorizes}.
 \end{proof}
 
-$\mathcal{F}\left(\theta, X\right)$ is called \emph{the Gibbs free energy (induced by $R(\cdot, \theta, X)$)}.
-
-\begin{theorem}
-At $T = 2\lambda$, there is a transition from one to several clusters, where $\lambda$ is the maximum eigenvalue of the sample covariance matrix of $X$. This is the matrix $\frac{1}{n}XX^\top$, where $X$ is seen as a matrix whose columns are all points in the observation.
-\label{thm:critical_temp_da}
-\end{theorem}
-
-The rest of this section is devoted to prove lemmas that will help prove
-this theorem.
+$F\left(\theta, X\right)$ is called \emph{the Gibbs free energy (induced by $R(\cdot, \theta, X)$)}.
 
 Without loss of generality, we assume that $\theta^\infty = 0$. Observe that
-when T is sufficiently high, the Hessian $H$ of $\mathcal{F}$ evaluated at $\theta^\infty$ is positive
+when $T$ is sufficiently high, the Hessian $H$ of $F$ evaluated at $\theta^\infty$ is positive
 definite. So new clusters arise when $H$ is no longer positive definite. Our plan is to demonstrate that $H$ stops being positive definite when $T = \frac{1}{2\lambda}$.
 
 The Hessian $H$ can be seen as a block matrix where each block is the
