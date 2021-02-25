@@ -87,14 +87,14 @@ A Gibbs distribution induced by the $K$-means cost function
 factorizes as follows:
 %
 \begin{equation}
-p(c \mid \theta, X) = \prod_{i \leq N} p(i, c(i) \mid \theta, X),
+p(c \mid \theta, X) = \prod_{i \leq N} p(i \mapsto c(i) \mid \theta, X),
 \label{eq:gibbs_distr_factorizes}
 \end{equation}
 %
 where
 %
 \begin{equation}
-p(i, k \mid \theta, X) \propto \exp\left(-\frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right).
+p(i \mapsto k \mid \theta, X) \propto \exp\left(-\frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right).
 \label{eq:gibbs_factors_da}
 \end{equation}
 %
@@ -126,7 +126,7 @@ Putting these results together yields that
 \begin{align}
 p(c \mid \theta, X) &= \frac{\prod_{i \leq N}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)}{\prod_{i \leq N}\sum_{k \leq K}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)}\\
 &= \prod_{i \leq N}\frac{\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)}{\sum_{k \leq K}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)}\\
-&= \prod_{i \leq N}p(i, c(i) \mid \theta, X).
+&= \prod_{i \leq N}p(i \mapsto c(i) \mid \theta, X).
 \end{align}
 \end{proof} 
 
@@ -211,7 +211,7 @@ an exercise.
 The set $\theta^*$ of centroids that maximize the entropy of $p(\cdot \mid \theta, X)$ must satisfy the following conditions.
 %
 \begin{equation}
-\theta^*_k = \frac{\sum_{i \leq N} p\left(i,k \mid \theta^*, X\right)x_i}{\sum_{i \leq N} p\left(i,k \mid \theta^*, X\right)},\text{ for $k \leq K$},
+\theta^*_k = \frac{\sum_{i \leq N} p\left(i \mapsto k \mid \theta^*, X\right)x_i}{\sum_{i \leq N} p\left(i \mapsto k \mid \theta^*, X\right)},\text{ for $k \leq K$},
 \label{eq:thm_stationarity_conds_centroids_da}
 \end{equation}
 %
@@ -246,7 +246,7 @@ Apply now linearity of the expectation and the fact that $\mathbb{E}\left[\mathb
 The desired condition follows from this equation and the fact that 
 %
 \begin{equation}
-\prob\left(C(i) = k \mid \theta, X\right) = p(i, k \mid \theta, X).
+\prob\left(C(i) = k \mid \theta, X\right) = p(i \mapsto k \mid \theta, X).
 \end{equation}
 \end{proof}
 
@@ -258,7 +258,7 @@ procedure.
 \item Set $t \gets t + 1$ and
 %
 \begin{equation}
-\theta^{(t+1)} \gets \frac{\sum_{i \leq N} p\left(i, k \mid \theta^{(t)}, X\right)x_i}{p\left(i,k \mid \theta^{(t)}, X\right)}.
+\theta^{(t+1)} \gets \frac{\sum_{i \leq N} p\left(i \mapsto k \mid \theta^{(t)}, X\right)x_i}{p\left(i \mapsto k \mid \theta^{(t)}, X\right)}.
 \end{equation}
 %
 This procedure converges to a local maximum of $H[p(\cdot \mid \theta, X)]$.
@@ -321,13 +321,13 @@ random variables makes the whole procedure intractable.
 \While{$T > \epsilon$}
 \Repeat
 \State $\theta_0 \gets \theta$
-\State Compute $p\left(i,k \mid \theta_0, X\right)$, for $i \leq N$ and $k \leq K$
-\State $\displaystyle \theta \gets \frac{\sum_{i \leq N} p\left(i,k \mid \theta_0, X\right) x_i}{\sum_{i \leq N} p\left(i,k \mid \theta_0, X\right)}$
+\State Compute $p\left(i \mapsto k \mid \theta_0, X\right)$, for $i \leq N$ and $k \leq K$
+\State $\displaystyle \theta \gets \frac{\sum_{i \leq N} p\left(i \mapsto k \mid \theta_0, X\right) x_i}{\sum_{i \leq N} p\left(i \mapsto k \mid \theta_0, X\right)}$
 \Until{$\texttt{close}\left(\theta, \theta_0\right)$}
 \State Add a small amount of noise to each centroid in $\theta$.
 \State $T \gets \texttt{reduce}(T)$
 \EndWhile
-\State \textbf{return} $\theta$, $\{p\left(i,k \mid \theta, X\right) \mid i \leq N, k \leq K\}$
+\State \textbf{return} $\theta$, $\{p\left(i \mapsto k \mid \theta, X\right) \mid i \leq N, k \leq K\}$
 \EndFunction
 \end{algorithmic}
 \caption{Deterministic annealing}
@@ -419,11 +419,11 @@ sequence of lemmas whose proofs are left as exercises.
 
 \begin{theorem}
 \begin{equation}
-\lim_{T \to \infty} p\left(i,k \mid \theta, X\right) = \frac{1}{K}.
+\lim_{T \to \infty} p\left(i \mapsto k \mid \theta, X\right) = \frac{1}{K}.
 \end{equation}
 
 \begin{equation}
-\lim_{T \to 0} \prob\left(i,k \mid \theta, X\right) = \begin{cases}
+\lim_{T \to 0} p\left(i \mapsto k \mid \theta, X\right) = \begin{cases}
 1 & \text{ if $\theta_k$ is the centroid closest to $x_k$ and}\\
 0 & \text{ otherwise}.
 \end{cases}
@@ -640,7 +640,7 @@ tractable.
 Show that
 %
 \begin{equation}
-\sum_{c}p(c \mid X') p(c \mid X'') = \prod_{i \leq N}\sum_{k \leq K}p\left(i,k \mid X'\right)p\left(i,k \mid X''\right).
+\sum_{c}p(c \mid X') p(c \mid X'') = \prod_{i \leq N}\sum_{k \leq K}p\left(i \mapsto k \mid X'\right)p\left(i \mapsto k \mid X''\right).
 \end{equation}
 %
 Show also that computing this takes $O(NK)$-time.
