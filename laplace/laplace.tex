@@ -1,8 +1,0 @@
-\chapter{The Laplace method}
-\label{ch:laplace}
-
-In this chapter, we study an analytical tool to handle intractable Gibbs distributions: \emph{the Laplace method}. We illustrate this in the context of clustering documents represented as vectors using the bag of words model. In this case, we wish then to cluster documents not by their Euclidean distance, but by how much the multisets of words occurring in the respective documents overlap. This overlap can be quantified by two documents $x$ and $y$ via their \emph{cosine similarity}: $x^\top y / \left\|x\right\|y\left\|\right\|$.
-
-\section{Least-angle clustering}
-
-Assume given a set $X = \{x_1, x_2, \ldots, x_N\} \subseteq \mathbb{R}^d$ of unit vectors. We wish to cluster them in $K$
