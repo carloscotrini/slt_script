@@ -1,10 +1,147 @@
-\chapter{The Laplace method}
+\chapter{Laplace's method}
 \label{ch:laplace}
 
-In this chapter, we study an analytical tool to handle intractable Gibbs distributions: \emph{the Laplace method}. We illustrate this in the context of clustering documents represented as vectors using the bag of words model. In this case, we wish then to cluster documents not by their Euclidean distance, but by how much the multisets of words occurring in the respective documents overlap. This overlap can be quantified by two documents $x$ and $y$ via their \emph{cosine similarity}: $x^\top y / \left\|x\right\|y\left\|\right\|$.
+In this chapter, we study an analytical tool to handle intractable Gibbs distributions: \emph{Laplace's method}. We use this method to analytically approximate the normalization constant of certain Gibbs distributions, which is often the main source of intractability. The essence of the method is to rewrite the normalization constant as an integral of the form
+%
+\begin{equation}
+\int \exp\left(-\frac{1}{T}f(y)\right) dy,
+\end{equation}
+%
+where $f$ is a convex function (or at least something similar to it). Afterwards, we exploit the fact that for sufficiently low $T$, this integral is approximated by $\exp(-\frac{1}{T}f(y_0))$, where $y_0$ is the minimum of $f$.
+
+We illustrate this method in two scenarios. The first one is just a toy example. The second one shows how to cluster documents represented as vectors using the bag of words model. In this case, we wish then to cluster documents not by their Euclidean distance, but by how much the words occurring in the respective documents overlap. For two documents $x$ and $y$ represented as vectors, this overlap can be quantified by their \emph{cosine similarity}: $x^\top y / \left\|x\right\|\left\|y\right\|$.
+
+\newpage
+\section{Laplace's method}
+
+\begin{theorem}
+Let $f : \mathbb{R}^D \to \mathbb{R}$ be a twice continuously differentiable function. If $f$ has a unique minimum $y_0$ and $H := \frac{\partial^2 f}{\partial y^2} \bigr |_{y_0}$ (the Hessian of $f$ evaluated at $y_0$) is positive definite then
+%
+\begin{equation}
+\lim_{M \to \infty} \frac{\displaystyle \int \exp\left(-M f(y)\right) dy}{\displaystyle \exp\left(-M f(y_0)\right)\left|\frac{-MH}{2\pi}\right|^{-1/2}}=1.
+\end{equation}
+%
+\label{thm:laplace}
+\end{theorem}
+
+Intuitively, Laplace's method suggests to approximate $\int \exp\left(-M f(y)\right) dy$ with $\exp\left(-M f(y_0)\right)$ if $M$ is sufficiently large.
+
+Figure~\ref{fig:laplace} illustrates the behavior of $\exp\left(-M f(y)\right)$, with $f(y) = -1 + y^2 + \sin(5y)$. Observe that although $\int \exp\left(-M f(y)\right) dy$ is analytically tractable, as $M \to \infty$, the area under the curve is mostly around the minimum of $f$.
+
+\begin{figure}[hbtp]
+\centering
+\includegraphics[width=\textwidth]{\dir/laplace.png}
+\caption{}
+\label{fig:laplace}
+\end{figure}
+
+The proof of Theorem~\ref{thm:laplace} relies on showing that
+%
+\begin{equation}
+\lim_{M \to \infty} \frac{\displaystyle \int \exp\left(-M f(y)\right) dy}{\displaystyle \int \exp\left(-M T^2_f(y)\right) dy}=1,
+\end{equation}
+%
+where $T^2_f(y)$ is the 2nd order Taylor approximation of $f$ at $y_0$ evaluated at $y$:
+%
+\begin{align}
+T^2_f(y) &= f(y_0) + (y - y_0)^\top \frac{\partial f}{\partial y}\Bigr|_{y_0} + \frac{1}{2}(y - y_0)^\top H (y - y_0)\\
+&= f(y_0) + \frac{1}{2}(y - y_0)^\top H (y - y_0).
+\end{align}
+%
+
+\section{Illustrative example}
+
+Let $\mathcal{C} = \{-1, +1\}^N$, for some $N \in \mathbb{N}$. We now illustrate how to exploit Laplace's method to approximate the intractable Gibbs distribution
+%
+\begin{equation}
+p(c) := \frac{1}{Z}\exp\left(-\frac{1}{T}R(c)\right),
+\end{equation}
+%
+where
+%
+\begin{equation}
+Z := \sum_{c \in \mathcal{C}} \exp\left(-\frac{1}{T}R(c)\right) \qquad \text{and} \qquad R(c) := - c^\top c.
+\end{equation}
+
+The normalization constant is a sum over $2^N$ elements and becomes intractable for large $N$. The following four exercises give a recipe for approximating this constant using Laplace's method.
+
+\begin{exercise}{[Complete the square]}
+Show that
+%
+\begin{equation}
+\exp\left(\frac{1}{T}c^\top c\right) = \left(\pi T\right)^{-d/2}\prod_{i \leq N}\int \exp\left(\frac{1}{T}y_i(c_i-y_i)\right) dy_i.
+\end{equation}
+%
+Hint: Start here
+%
+\begin{equation}
+\left(\pi T\right)^{d/2} = \int \exp\left(-\frac{1}{T}\left\|y - c\right\|^2\right)dy.
+\end{equation}
+%
+\end{exercise}
+
+\begin{exercise}{[Rewrite normalization constant]}
+Complete the following derivation
+%
+\begin{align}
+Z &= \sum_{c} \exp\left(\frac{1}{T}c^\top c\right)\\
+&= \left(\pi T\right)^{-d/2}\sum_c \prod_i \int \exp\left(\frac{1}{T}y_i(c_i-y_i)\right) dy_i\\
+&= \ldots \\
+&= \left(\pi T\right)^{-d/2}\int \exp\left(-\frac{1}{T}\left(y^\top y - T \sum_{i \leq N} \log \left(2 \cosh\left(\frac{1}{T}y_i\right)\right)\right)\right) dy.\label{eq:norm_cost_ugly_integral}
+\end{align}
+%
+Hint: Apply the combinatorial trick from Theorem~\ref{thm:gibbs_factorizes}. Recall also that
+%
+\begin{equation}
+2 \cosh(x) = \exp(x) + \exp(-x).
+\end{equation}
+%
+\end{exercise}
+
+\begin{exercise}{[Apply Laplace's method]}
+Show that, when $T > 1/2$, the conditions to apply Laplace's method hold. As a result, the integral in Equation~\ref{eq:norm_cost_ugly_integral} could be approximated to 1. Is this a good estimation?
+\end{exercise}
+
+It is still possible to apply Laplace's method when $T \leq 1/2$, and approximate the integral above to 1. However, doing this formally requires a more thorough understanding of the proof of Laplace's method.
+
+\section{Using Laplace's method to approximate intractable normalization constants}
+
+The section before illustrates the following analytical strategy to estimate normalization constants:
+
+\begin{enumerate}
+\item \textbf{Rewrite cost function} Rewrite your cost function as the squared norm of some vector, so that
+%
+\begin{equation}
+\exp\left(-\frac{1}{T}R(c, X)\right) = \mathit{const}\exp\left(g(c)^\top g(c)\right).
+\end{equation}
+%
+\item \textbf{Complete the square} Recall that
+%
+\begin{equation}
+\pi^{d/2} = \int \exp\left(-\left\|y - g(c)\right\|^2\right) dy.
+\end{equation}
+%
+Use this to derive that
+%
+\begin{equation}
+\exp\left(g(c)^\top g(c)\right) = \pi^{-d/2}\int \exp\left(-y^\top y + 2y^\top g(c)\right)dy.
+\end{equation}
+%
+\item \textbf{Rewrite normalization constant} Show that the normalization constant can be expressed as follows
+%
+\begin{align}
+Z &= \sum_{c} \exp\left(-\frac{1}{T}R(c, X)\right)\\ 
+&= \ldots\\
+&= \mathit{const} \int \exp\left(-M f(y)\right)dy.
+\end{align}
+%
+
+\item \textbf{Apply Laplace's method} Verify that the conditions for Laplace's method hold and apply it to estimate $Z$ with $\mathit{const}\exp\left(-M f(y_0)\right)$, where $y_0$ is the minimum of $f$.
+\end{enumerate}
 
 \section{Least-angle clustering}
 
+We now apply Laplace's method for a more interesting problem.
 Assume given a set $X = \{x_1, x_2, \ldots, x_N\} \subseteq \mathbb{R}^d$ of unit vectors. We wish to cluster them in $K$ clusters so that any pair of vectors are assigned to the same cluster if they point in similar directions.
 
 We model a cluster assignment as a matrix $M \in \{0, 1\}^{N \times K}$, where
@@ -31,7 +168,7 @@ Observe that the normalization constant of the Gibbs distribution induced by thi
 %
 %We first rewrite the cost function into a sum, where each term in the sum is a quadratic form. Afterwards, we introduce dummy variables and use the technique of completing the square to 
 
-\section{The cost function}
+\section{Rewrite cost function}
 \label{sec:cost_function_la}
 
 \begin{exercise}
@@ -59,7 +196,7 @@ R(M, X) &= -2\left(\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x
 %
 \end{proof}
 
-\section{The normalization constant}
+\section{Complete the square}
 
 Recall the Gibbs distribution
 %
@@ -80,16 +217,14 @@ Z_X = \sum_{M \in \{0, 1\}^{N \times K}}e^{-\frac{1}{2T}}\prod_{k \leq K} \exp\l
 \begin{proof}
 \begin{align*}
 Z_X &= \sum_{M} \exp\left(-\frac{1}{T}R(M, X)\right)\\
-&= \sum_{M} \exp\left(\frac{1}{2NT}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2 - \frac{1}{2NT}\right)\\
-&= e^{-\frac{1}{2T}}\sum_{M} \prod_{k \leq K}\exp\left(\frac{1}{2NT}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2\right).\\
+&= \sum_{M} \exp\left(\frac{1}{2NT}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2 - \frac{1}{2T}\right)\\
+&= e^{-\frac{1}{2T}}\sum_{M} \prod_{k \leq K}\exp\left(\frac{1}{2NT}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2\right).\\
 \end{align*}
 \end{proof}
 
 Observe that the partition function requires to compute a sum over $2^{N \times K}$ elements and it is not clear how to do that sum analytically or in a computationally efficient way. Hence, computing the Gibbs distribution takes exponential time. This makes ME + PA very inefficient as these methods rely on computing the Gibbs distribution.
 
-\section{Completing the square}
-
-The remaining exercises provide a trick to efficiently compute the partition function.
+We now use the technique of completing the square.
 
 \begin{exercise}
 For $k \leq K$, define a dummy variable $y_k$. Show that
@@ -121,14 +256,14 @@ Using the fact that this is the normalization constant of a Gaussian, we have th
 We can rearrange the resulting equation to obtain Equation~\ref{eq:partition_trick}.
 \end{proof}
 
-\section{Swapping sum and product}
+\section{Rewrite the normalization constant}
 \label{sec:swap_sum_prod}
 
 \begin{exercise}
 Using Equations~\ref{eq:partition_function} and~\ref{eq:partition_trick}, show that
 %
 \begin{equation}
-Z_X = \alpha \int\exp\left(-\frac{N}{2T}\sum_{k \leq K} \left\|y_k\right\|^2 + \sum_{i \leq N} \log \sum_{k \leq K} \exp\left(\frac{1}{T}x_i^\top y_k\right)\right)dy,
+Z_X = \alpha \int\exp\left(-\frac{N}{2T}\sum_{k \leq K} \left\|y_k\right\|^2 + \sum_{i \leq N} \log \sum_{k \leq K} \exp\left(\frac{1}{T}x_i^\top y_k\right)\right)d\mathbf{y},
 \end{equation}
 %
 where
@@ -194,9 +329,9 @@ If we apply this to the equation above, we get
 \end{align}
 \end{proof}
 
-\section{The Laplace method}
+\section{Apply Laplace's method}
 
-The integral in Equation~\ref{eq:monster_integral} is analytically intractable. However, it can be expressed in the form $\exp\left(-\frac{N}{T}f_X(y_1, \ldots, y_K)\right)$, where $f_X$ has a unique minimum at 0. This allows us to use what is called \emph{the Laplace method}, a method to approximate the integral with arbitrary precision as $\frac{N}{T} \to \infty$.
+%The integral in Equation~\ref{eq:monster_integral} is analytically intractable. However, it can be expressed in the form $\exp\left(-\frac{N}{T}f_X(y_1, \ldots, y_K)\right)$, where $f_X$ has a unique minimum at 0. This allows us to use what is called \emph{the Laplace method}, a method to approximate the integral with arbitrary precision as $\frac{N}{T} \to \infty$.
 
 Let $\mathbf{y}$ be the vector of real variables resulting from the concatenation of $y_1, y_2, \ldots, y_k$. Equation~\ref{eq:monster_integral} can then be rewritten as
 %
@@ -207,38 +342,39 @@ Z_X = e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\int \exp\lef
 where
 %
 \begin{equation}
-f_X(\mathbf{y}) = - \frac{1}{2}\sum_{k \leq K}\left\|y_k\right\|^2 + \frac{T}{N}\sum_{i \leq N}\log\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right).
+f_X(\mathbf{y}) = \frac{1}{2}\sum_{k \leq K}\left\|y_k\right\|^2 - \frac{T}{N}\sum_{i \leq N}\log\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right).
 \end{equation}
 
-Recall now that $f_X(\mathbf{y})$'s second-order Taylor expansion at $\mathbf{y}^* \in \mathbb{R}^{KD}$ is given by
 %
-$$f_X(\mathbf{y}) \approx f_X(\mathbf{y}^*) + (\mathbf{y} - \mathbf{y}*)^\top \left.\frac{\partial f_X}{\partial \mathbf{y}}\right|_{\mathbf{y}^*} + (\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*),$$
+%Recall now that $f_X(\mathbf{y})$'s second-order Taylor expansion at $\mathbf{y}^* \in \mathbb{R}^{KD}$ is given by
+%%
+%$$f_X(\mathbf{y}) \approx f_X(\mathbf{y}^*) + (\mathbf{y} - \mathbf{y}*)^\top \left.\frac{\partial f_X}{\partial \mathbf{y}}\right|_{\mathbf{y}^*} + (\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*),$$
+%%
+%where $\left.\frac{\partial f_X}{\partial \mathbf{y}}\right|_{\mathbf{y}^*}$ is $f_X$'s gradient evaluated at $\mathbf{y}^*$ and $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$ is $f_X$'s Hessian evaluated at $\mathbf{y}^*$.
 %
-where $\left.\frac{\partial f_X}{\partial \mathbf{y}}\right|_{\mathbf{y}^*}$ is $f_X$'s gradient evaluated at $\mathbf{y}^*$ and $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$ is $f_X$'s Hessian evaluated at $\mathbf{y}^*$.
-
-If we choose $\mathbf{y}^*$ to be $f_X's$' minimum, then this reduces to
+%If we choose $\mathbf{y}^*$ to be $f_X's$' minimum, then this reduces to
+%%
+%$$f_X(\mathbf{y}) \approx f_X(\mathbf{y}^*) + (\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*).$$
+%%
 %
-$$f_X(\mathbf{y}) \approx f_X(\mathbf{y}^*) + (\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*).$$
+%\begin{exercise}
+%Using this approximation, and assuming that $\mathbf{y}^*$ and that $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$ are given, show that
+%%
+%$$Z_X \approx \left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}} \left(2\pi\right)^{D/2}\left|\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right|^{-\frac{1}{2}}\exp\left(-\frac{1}{2T}-\frac{N}{T}f_X(\mathbf{y}^*)\right).$$
+%%
+%\end{exercise}
 %
-
-\begin{exercise}
-Using this approximation, and assuming that $\mathbf{y}^*$ and that $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$ are given, show that
-%
-$$Z_X \approx \left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}} \left(2\pi\right)^{D/2}\left|\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right|^{-\frac{1}{2}}\exp\left(-\frac{1}{2T}-\frac{N}{T}f_X(\mathbf{y}^*)\right).$$
-%
-\end{exercise}
-
-\begin{proof}
-\begin{align*}
-Z_X &= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\int \exp\left( - \frac{N}{T}f_X(\mathbf{y}) \right)d\mathbf{y}\\
-&\approx e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\int \exp\left( - \frac{N}{T}\left(f_X(\mathbf{y}^*) + (\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*)\right) \right)d\mathbf{y}\\
-&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\int \exp\left((\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*)\right) d\mathbf{y}\\
-&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\int \exp\left(-\frac{1}{2}(\mathbf{y} - \mathbf{y}^*)^\top \left(-2\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right)(\mathbf{y} - \mathbf{y}^*)\right) d\mathbf{y}\\
-&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\left|2\pi\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}^{-1}\right|^{\frac{1}{2}}\\
-&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\left|2\pi\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}^{-1}\right|^{\frac{1}{2}}\\
-&= \left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}} \left(2\pi\right)^{D/2}\left|\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right|^{-\frac{1}{2}}\exp\left(-\frac{1}{2T}-\frac{N}{T}f_X(\mathbf{y}^*)\right).
-\end{align*}
-\end{proof}
+%\begin{proof}
+%\begin{align*}
+%Z_X &= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\int \exp\left( - \frac{N}{T}f_X(\mathbf{y}) \right)d\mathbf{y}\\
+%&\approx e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\int \exp\left( - \frac{N}{T}\left(f_X(\mathbf{y}^*) + (\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*)\right) \right)d\mathbf{y}\\
+%&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\int \exp\left((\mathbf{y} - \mathbf{y}^*)^\top \left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}(\mathbf{y} - \mathbf{y}^*)\right) d\mathbf{y}\\
+%&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\int \exp\left(-\frac{1}{2}(\mathbf{y} - \mathbf{y}^*)^\top \left(-2\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right)(\mathbf{y} - \mathbf{y}^*)\right) d\mathbf{y}\\
+%&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\left|2\pi\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}^{-1}\right|^{\frac{1}{2}}\\
+%&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y}^*)\right)\left|2\pi\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}^{-1}\right|^{\frac{1}{2}}\\
+%&= \left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}} \left(2\pi\right)^{D/2}\left|\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right|^{-\frac{1}{2}}\exp\left(-\frac{1}{2T}-\frac{N}{T}f_X(\mathbf{y}^*)\right).
+%\end{align*}
+%\end{proof}
 
 \begin{exercise}
 Show how to compute $\mathbf{y}^*$.
@@ -253,8 +389,8 @@ We obtain $\mathbf{y}^*$ by solving
 %
 
 \begin{align*}
-\frac{\partial f_X}{\partial y_k} &= - \frac{1}{2}\frac{\partial f_X}{\partial y_k}\sum_{k \leq K}\left\|y_k\right\|^2 + \frac{T}{N}\sum_{i \leq N}\frac{\partial f_X}{\partial y_k}\log\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right)\\
-&= - y_k + \frac{T}{N}\sum_{i \leq N}\frac{\frac{1}{T}x_i\exp\left(\frac{1}{T}x_i^\top y_k\right)}{\sum_{k' \leq K}\exp\left(\frac{1}{T}x_i^\top y_{k'}\right)}\\
+\frac{\partial f_X}{\partial y_k} &= \frac{1}{2}\frac{\partial f_X}{\partial y_k}\sum_{k \leq K}\left\|y_k\right\|^2 - \frac{T}{N}\sum_{i \leq N}\frac{\partial f_X}{\partial y_k}\log\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right)\\
+&= y_k - \frac{T}{N}\sum_{i \leq N}\frac{\frac{1}{T}x_i\exp\left(\frac{1}{T}x_i^\top y_k\right)}{\sum_{k' \leq K}\exp\left(\frac{1}{T}x_i^\top y_{k'}\right)}\\
 \end{align*}
 %
 Hence, for $k \leq K$, $\frac{\partial f_X}{\partial y_k}= 0$ implies that 
@@ -269,7 +405,7 @@ Show how to compute $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{
 \end{exercise}
 
 \begin{proof}
-Recall that for a function $g : \mathbb{R}^d \to \mathbb{R}$, the Hessian is defined as a matrix whose $(i,j)$ entry is $\frac{\partial^2 g}{\partial y_i \partial y_j}$. Hence, $\frac{\partial^2 f_X}{\partial \mathbf{y}^2}$ can be seen as an array of matrices as follows:
+Recall that for a function $g : \mathbb{R}^d \to \mathbb{R}$, the Hessian is defined as a matrix whose $(i,j)$ entry is $\frac{\partial^2 g}{\partial y_i \partial y_j}$. Hence, $\frac{\partial^2 f_X}{\partial \mathbf{y}^2}$ is the following block matrix:
 %
 $$\frac{\partial^2 f_X}{\partial \mathbf{y}^2} = 
 \left(
@@ -294,3 +430,9 @@ When $k \neq \ell$, one can show that
 $$\frac{\partial^2 f_X}{\partial y_k \partial y_\ell} = \frac{1}{TN}\sum_{i \leq N} x_i x_i^\top P_{ik}P_{i\ell}.$$
 %
 \end{proof}
+
+It can be shown that $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$ is positive definite, when $N$ is sufficiently large and $T$ is not too low\footnote{A more precise statement will be done for next year. I still have not found a simple way to demonstrate this.}. One can then apply Laplace's method to do the following approximation:
+%
+\begin{equation}
+Z_X = e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y^*}) \right).
+\end{equation}
