@@ -18,7 +18,7 @@ We illustrate this method in two scenarios. The first one is just a toy example.
 Let $f : \mathbb{R}^D \to \mathbb{R}$ be a twice continuously differentiable function. If $f$ has a unique minimum $y_0$ and $H := \frac{\partial^2 f}{\partial y^2} \bigr |_{y_0}$ (the Hessian of $f$ evaluated at $y_0$) is positive definite then
 %
 \begin{equation}
-\lim_{M \to \infty} \frac{\displaystyle \int \exp\left(-M f(y)\right) dy}{\displaystyle \exp\left(-M f(y_0)\right)\left|\frac{-MH}{2\pi}\right|^{-1/2}}=1.
+\lim_{M \to \infty} \frac{\displaystyle \int \exp\left(-M f(y)\right) dy}{\displaystyle \exp\left(-M f(y_0)\right)\left|\frac{MH}{2\pi}\right|^{-1/2}}=1.
 \end{equation}
 %
 \label{thm:laplace}
@@ -69,7 +69,7 @@ The normalization constant is a sum over $2^N$ elements and becomes intractable 
 Show that
 %
 \begin{equation}
-\exp\left(\frac{1}{T}c^\top c\right) = \left(\pi T\right)^{-d/2}\prod_{i \leq N}\int \exp\left(\frac{1}{T}y_i(c_i-y_i)\right) dy_i.
+\exp\left(\frac{1}{T}c^\top c\right) = \left(\pi T\right)^{-d/2}\int\exp\left(-\frac{1}{T}y^\top y\right) \prod_{i \leq N}\exp\left(\frac{2}{T}y_ic_i\right) dy.
 \end{equation}
 %
 Hint: Start here
@@ -85,9 +85,9 @@ Complete the following derivation
 %
 \begin{align}
 Z &= \sum_{c} \exp\left(\frac{1}{T}c^\top c\right)\\
-&= \left(\pi T\right)^{-d/2}\sum_c \prod_i \int \exp\left(\frac{1}{T}y_i(c_i-y_i)\right) dy_i\\
+&= \left(\pi T\right)^{-d/2}\int\exp\left(-\frac{1}{T}y^\top y\right) \sum_{c}\prod_{i \leq N}\exp\left(\frac{2}{T}y_ic_i\right) dy\\
 &= \ldots \\
-&= \left(\pi T\right)^{-d/2}\int \exp\left(-\frac{1}{T}\left(y^\top y - T \sum_{i \leq N} \log \left(2 \cosh\left(\frac{1}{T}y_i\right)\right)\right)\right) dy.\label{eq:norm_cost_ugly_integral}
+&= \left(\pi T\right)^{-d/2}\int \exp\left(-\frac{1}{T}\left(y^\top y - T \sum_{i \leq N} \log \left(2 \cosh\left(\frac{2}{T}y_i\right)\right)\right)\right) dy.\label{eq:norm_cost_ugly_integral}
 \end{align}
 %
 Hint: Apply the combinatorial trick from Theorem~\ref{thm:gibbs_factorizes}. Recall also that
@@ -99,12 +99,13 @@ Hint: Apply the combinatorial trick from Theorem~\ref{thm:gibbs_factorizes}. Rec
 \end{exercise}
 
 \begin{exercise}{[Apply Laplace's method]}
-Show that, when $T > 1/2$, the conditions to apply Laplace's method hold. As a result, the integral in Equation~\ref{eq:norm_cost_ugly_integral} could be approximated to 1. Is this a good estimation?
+Show that, when $T > 2$, the conditions to apply Laplace's method hold. As a result, the integral in Equation~\ref{eq:norm_cost_ugly_integral} could be approximated to 1. Is this a good estimation?
 \end{exercise}
 
-It is still possible to apply Laplace's method when $T \leq 1/2$, and approximate the integral above to 1. However, doing this formally requires a more thorough understanding of the proof of Laplace's method.
+It is still possible to apply Laplace's method when $T \leq 2$, and approximate the integral above to 1. However, doing this formally requires a more thorough understanding of the proof of Laplace's method. An appendix describing this approximation is left for a future version of this script.
 
 \section{Using Laplace's method to approximate intractable normalization constants}
+\label{sec:laplace_recipe}
 
 The section before illustrates the following analytical strategy to estimate normalization constants:
 
@@ -162,7 +163,7 @@ R(M, X) = \frac{1}{N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_
 \end{equation}
 %
 
-Observe that the normalization constant of the Gibbs distribution induced by this cost function is a sum over $K^N$ elements, making it intractable. We introduce in this chapter \emph{the Laplace method} and use it to give an analytically tractable estimate of this normalization constant.
+Observe that the normalization constant of the Gibbs distribution induced by this cost function is a sum over $K^N$ elements, making it intractable. The next four sections illustrate how to manipulate the normalization constant so we can apply Laplace's method.
 
 %\section{Outline}
 %
@@ -195,6 +196,14 @@ R(M, X) &= -2\left(\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x
 \end{align}
 %
 \end{proof}
+
+This result only implies that
+%
+\begin{equation}
+\exp\left(-\frac{1}{T}R(M, X)\right) = e^{-\frac{1}{2T}}\prod_{k \leq K}\exp\left(-\frac{1}{2N}\left\|\sum_{i \leq N}M_{ik}x_i\right\|^2\right).
+\end{equation}
+%
+This is not an expression of the form $\textit{const} \exp\left(g(c)^\top g(c)\right)$, as recommended in Section~\ref{sec:laplace_recipe}. However, we show next how to adapt the cost function so that we can still follow all the other steps from Section~\ref{sec:laplace_recipe}.
 
 \section{Complete the square}
 
@@ -275,7 +284,7 @@ where
 
 \textit{Hint: Prove and use the following auxiliary results.}
 
-$$\prod_{k \leq K} \int f_k(y) d\mathbf{y} = \int \prod f_k(y_k) dy.$$
+$$\prod_{k \leq K} \int f_k(y_k) dy_k = \int \prod f_k(y_k) d\mathbf{y}.$$
 
 $$\sum_{M \in \{0, 1\}^{N \times K}}\prod_{i \leq N}\exp\left(\frac{1}{T}\sum_{k \leq K}M_{ik}x_i^\top y_k\right) = \prod_{i \leq N}\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right).$$
 \end{exercise}
@@ -283,17 +292,16 @@ $$\sum_{M \in \{0, 1\}^{N \times K}}\prod_{i \leq N}\exp\left(\frac{1}{T}\sum_{k
 \begin{proof}
 Using Equation~\ref{eq:partition_trick}, Equation~\ref{eq:partition_function} becomes
 %
-\begin{align*}
+\begin{align}
 Z_X &= e^{-\frac{1}{2T}}\sum_{M \in \{0, 1\}^{N \times K}}\prod_{k \leq K} \exp\left(\frac{1}{2NT}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2\right)\\
-&= e^{-\frac{1}{2T}}\sum_{M \in \{0, 1\}^{N \times K}}\prod_{k \leq K} \left(\frac{2\pi T}{N}\right)^{\frac{D}{2}} \int \exp\left(- \frac{N}{2T}\left\|y\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y\right)dy\\
-&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\sum_{M \in \{0, 1\}^{N \times K}}\prod_{k \leq K}  \int \exp\left(- \frac{N}{2T}\left\|y\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y\right)dy\\
-\end{align*}
+&= e^{-\frac{1}{2T}}\sum_{M \in \{0, 1\}^{N \times K}}\prod_{k \leq K} \left(\frac{2\pi T}{N}\right)^{\frac{D}{2}} \int \exp\left(- \frac{N}{2T}\left\|y_k\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y_k\right)dy_k\\
+&= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\sum_{M \in \{0, 1\}^{N \times K}}\prod_{k \leq K}  \int \exp\left(- \frac{N}{2T}\left\|y_k\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y_k\right)dy_k.
+\end{align}
 
 Observe now the following property.
 %
 \begin{align*}
-\prod_{k \leq K} \int f_k(y) dy &= \left(\int f_1(y) dy\right)\left(\int f_2(y) dy\right)\ldots \left(\int f_K(y) dy\right)\\
-&= \left(\int f_1(y_1) dy_1\right)\left(\int f_2(y_2) dy_2\right)\ldots \left(\int f_K(y_K) dy_K\right)\\
+\prod_{k \leq K} \int f_k(y_k) dy_k &= \left(\int f_1(y_1) dy_1\right)\left(\int f_2(y_2) dy_2\right)\ldots \left(\int f_K(y_K) dy_K\right)\\
 &= \int f_1(y_1) f_2(y_2) \ldots f_K(y_K) d\mathbf{y}\\
 &= \int \prod f_k(y_k) d\mathbf{y}.
 \end{align*}
