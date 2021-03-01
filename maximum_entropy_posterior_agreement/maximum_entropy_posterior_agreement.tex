@@ -114,7 +114,7 @@ In this section, we explain the rationale behind the Gibbs distribution. Remembe
 
 \begin{requirement}
 
-For any $X \in \mathcal{X}$ and any $c_1, c_2 \in \mathcal{C}$, $R(c_1, X) \leq R(c_2, X)\Leftrightarrow P(c_1 \mid X) \leq P(c_2 \mid X)$.
+For any $X \in \mathcal{X}$ and any $c_1, c_2 \in \mathcal{C}$, $R(c_1, X) \leq R(c_2, X)\Leftrightarrow P(c_1 \mid X) \geq P(c_2 \mid X)$.
 
 \end{requirement}
 
@@ -136,7 +136,7 @@ These requirements define a constrained optimization problem
 %
 \begin{align}
 \max_{p} \quad& H[p]\label{eq:max_ent_gibbs}\\
-s.t. \quad& p(c_1) \leq p(c_2), \text{ for any $c_1, c_2 \in \mathcal{C}$ with $R(c_1, X) \leq R(c_2, X)$,}\label{req:max_ent_mono}\\
+s.t. \quad& p(c_1) \geq p(c_2), \text{ for any $c_1, c_2 \in \mathcal{C}$ with $R(c_1, X) \leq R(c_2, X)$,}\label{req:max_ent_mono}\\
 & p(c) \geq 0, \text{ for $c \in \mathcal{C}$,}\label{req:max_ent_nonneg}\\
 & \sum_{c \in C} p(c) = 1, \label{req:max_ent_massone}\\
 & \mathbb{E}_{C \sim p}[R(C, X)] = \mu. \label{req:max_ent_fixexp}
