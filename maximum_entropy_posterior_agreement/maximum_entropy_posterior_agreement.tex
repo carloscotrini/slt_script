@@ -301,7 +301,7 @@ p(C \mid X') = p(C \mid X) + \left(\nabla_{X}p(C\mid X)\right)^\top \Delta' + O(
 \section{The random array}
 \label{sec:random_array}
 
-We present an artificial toy example, called \emph{the random array} that illustrates the power of ME+PA. In particular, it illustrates the ways in which empirical risk minimization overconfidently generalizes when there is insufficient data and noise interference.
+We present an artificial toy example, called \emph{the random array} that illustrates the power of ME+PA. In particular, it illustrates the ways in which empirical risk minimization omakes overconfident estimates when there is insufficient data and noise interference.
 
 \subsection{Setup}
 
@@ -314,12 +314,12 @@ i^* := \argmin_{i \leq n} \mathbb{E}_{\mathfrak{X}}[\mathfrak{X}_i].
 \end{equation}
 
 Take a moment to convince yourself that $i^* = 0$. To give some intuition on the problem, 
-consider Figure~\ref{fig:illustration_random_array}, which shows a realization of $X'$ and $X''$. 
+consider Figure~\ref{fig:illustration_random_array}, which shows a realization of $X'$ and $X''$, with $n = 100$. 
 
 \begin{figure}[hbtp]
 \centering
 \includegraphics[width=\textwidth]{\dir/two_observations.png}
-\caption{}
+\caption{Two realizations $X'$ and $X''$ of $\mathfrak{X}$, with $n = 100$. The $x$-axis indicates the indices $\{0, 1, \ldots, n-1\}$ and the $y$-axis indicates the values $X_0, X_1, \ldots, X_{n-1}$, for $X \in \{X', X''\}$.}
 \label{fig:illustration_random_array}
 \end{figure}
 
@@ -327,7 +327,7 @@ consider Figure~\ref{fig:illustration_random_array}, which shows a realization o
 
 Statistical learning proposes to train models via \emph{empirical risk minimization (ERM)}. In ERM, we define an instance space $\mathcal{X}$, a hypothesis class $\mathcal{C}$, and a cost function $R$. 
 
-ERM trains a model in $c \in \mathcal{C}$ that minimizes \emph{the expected cost} $\mathbb{E}_X[R(c, X)]$, where $X$ is a random observation of the phenomenon. However, this requires the distribution $p$ behind the phenomenon, which we assume to be unavailable. In consequence, statistical learning advocates to approximate this expected cost with the \emph{empirical cost} $\frac{1}{n} \sum_{i \leq n} R(c, X_i)$, where $X_1, \ldots, X_n$ is a sample of $p$.
+ERM trains a model in $c \in \mathcal{C}$ that minimizes \emph{the expected cost} $\mathbb{E}_X[R(c, X)]$, where $X$ is a random observation of the phenomenon. However, this requires the distribution $p$ behind the phenomenon, which we assume to be unavailable. In consequence, statistical learning advocates to approximate this expected cost with the \emph{empirical cost} $\frac{1}{n} \sum_{i \leq n} R(c, X_i)$, where $X_1, \ldots, X_n$ is a sample of $p$.\looseness=-1
 
 We define the \emph{empirical risk minimizer} as a model $\hat{c}$ that minimizes the empirical cost. That is,
 %
@@ -337,27 +337,24 @@ We define the \emph{empirical risk minimizer} as a model $\hat{c}$ that minimize
 %
 We assume for simplicity that $\hat{c}$ always exist, although this is not true in general.
 
-If we follow standard ERM, then we would estimate $i^*$ with 
-%
-$$\hat{i} := \argmin_{i \leq n} X'_i + X''_i.$$ 
-%
-That is, the popular wisdom in statistical learning advocates to estimate $i^*$ with the index where the minimum of $X' + X''$ is. However, this approach fails in probability as $n$ increases. This is because, with high probability, there is some $i > 0$ for which $X'_i + X''_i < X'_0 + X''_0$.
+If we follow ERM, then we would estimate $i^*$ with $\hat{i} := \argmin_{i \leq n} X'_i + X''_i.$
+That is, the index where the minimum of $X' + X''$ is. However, this approach fails in probability as $n$ increases. This is because, with high probability, there is some $i > 0$ for which $X'_i + X''_i < X'_0 + X''_0$.
 
 \subsection{What happens if we do ME+PA?}
 
-ME+PA correctly estimates $i^*$ much more often than ERM. To demonstrate this, we set $n = 1000$ and conducted an experiment where we drew at random 1000 pairs $(X', X'')$ of independent observations from $\mathfrak{X}$'s distribution. For each pair, we executed ERM and ME+PA to estimate $i^*$. We counted how often each value $i \leq n$ was chosen as the estimate by each method. Figures~\ref{fig:erm_array} and~\ref{fig:mepa_array} demonstrate that in ~20\% of the cases, ME+PA selects $i^*$ as the estimate, whereas ERM never picks it.
+ME+PA correctly estimates $i^*$ much more often than ERM. To demonstrate this, we set $n = 100$ and conducted an experiment where we drew at random 100 pairs $(X', X'')$ of independent observations from $\mathfrak{X}$'s distribution. For each pair, we executed ERM and ME+PA to estimate $i^*$. We counted how often each value $i \leq n$ was chosen as the estimate by each method. Figures~\ref{fig:erm_array} and~\ref{fig:mepa_array} demonstrate that in more than 70\% of the cases, ME+PA selects $i^*$ as the estimate, whereas ERM selects it in less than 10\% of the cases.
 
 \begin{figure}
 \centering
 \includegraphics[width=0.8\textwidth]{\dir/erm_array.png}
-\caption{Histogram counting how often each estimate in \{0, \ldots, 999\} was picked by ERM as the estimate for $i^*$ across 1000 trials. Observe that ERM never picked the correct estimate.}
+\caption{Histogram counting how often each estimate in \{0, \ldots, 99\} was picked by ERM as the estimate for $i^*$ across 100 trials. Observe that ERM picks the correct solution less than 10\% of the time.}
 \label{fig:erm_array}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[width=0.8\textwidth]{\dir/mepa_array.png}
-\caption{Histogram counting how often each estimate in \{0, \ldots, 999\} was picked by ME+PA as the estimate for $i^*$ across 1000 trials. In contrast to ERM, ME+PA picks the correct estimate around 20\% of the time.}
+\caption{Histogram counting how often each estimate in \{0, \ldots, 99\} was picked by ME+PA as the estimate for $i^*$ across 100 trials. In contrast to ERM, ME+PA picks the correct solution more than 70\% of the time.}
 \label{fig:mepa_array}
 \end{figure}
 
@@ -367,9 +364,10 @@ We now illustrate the steps to apply ME+PA to this problem.
 
 First, the hypothesis class is $\mathcal{C} = \{0, \ldots, n-1\}$ and the set $\mathcal{X}$ is $\mathbb{R}^n$.
 
-Let $X \in \mathcal{X}$ be an observation. The cost function is $R(c, X) = X_c$. The Gibbs distribution is given by $p(c \mid X) \propto \exp\left(-1/T X_c\right)$. For the two given observations $X'$ and $X''$, a combined Gibbs distribution is $p(c \mid X', X'') \propto \exp\left(-1/T \left(X'_c + X''_c\right)\right)$.
+Let $X \in \mathcal{X}$ be an observation. The cost function is $R(c, X) = X_c$. The Gibbs distribution is given by $p(c \mid X) \propto \exp\left(-\frac{1}{T} X_c\right)$. 
+%For the two given observations $X'$ and $X''$, a combined Gibbs distribution is $p(c \mid X', X'') \propto \exp\left(-1/T \left(X'_c + X''_c\right)\right)$.
 
-We now need to define a value for $T$. We guess a set of candidate values and, for each of them, we compute the posterior agreement kernel $\kappa(X', X'')$. We then pick the value that yielded the maximum posterior agreement kernel. Finally, we just choose the $\hat{c}$ with largest $p(\hat{c} \mid X', X'')$.
+We now need to define a value for $T$. We guess a set of candidate values and, for each of them, we compute the posterior agreement kernel $\kappa(X', X'')$. We then pick the value that yielded the maximum posterior agreement kernel. Finally, we just choose the $\hat{c}$ with largest $p(\hat{c} \mid X')p(\hat{c} \mid X'')$.
 
 \section{Conclusion}
 
@@ -379,4 +377,8 @@ A popular statistical learning approach for training models is empirical risk mi
 
 \paragraph{Lack of information:} ERM produces only single models. These single models may not give a proper overview of the nature of the phenomenon and may be misleading, as we observed in the random array problem.
 
-To address these limitations, we propose a new approach: maximum entropy and posterior agreement. In maximum entropy, rather than producing a single model, we produce a maximum-entropy distribution over models. This distribution is produced in a way that models with low cost get more mass than models with high cost. The distribution offers then a better overview of the landscape of models that fit the phenomenon. These distributions require a value for a hyper-parameter, called the temperature. This parameter can be chosen using standard model selection techniques. In our case, we propose an alternative, called posterior agreement.
+\vspace{15pt}
+
+To address these limitations, we present a new approach: maximum entropy and posterior agreement. In maximum entropy, rather than producing a single model, we produce a maximum-entropy distribution over models. This distribution is produced in a way that models with low cost get more mass than models with high cost. The distribution offers then a better overview of the landscape of models that fit the phenomenon. These distributions require a value for a hyper-parameter, called the temperature. This parameter can be chosen using standard model selection techniques. In our case, we propose an alternative, called posterior agreement.
+
+Maximum entropy offers two benefits that we illustrate throughout this script. First, it computes a distribution over models that allows to discriminate between good and bad models. Second, this approach can be applied to many different problems, as mentioned in the publications at the beginning of this chapter. We hope that this script convinces the reader of the potential of maximum entropy for statistical learning.
