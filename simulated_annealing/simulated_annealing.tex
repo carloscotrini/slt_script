@@ -206,7 +206,7 @@ has an edge to itself.
 \item Define, for $c, c' \in \mathcal{C}$, the \emph{accepting probability}
 %
 \begin{equation}
-A(c', c) := \min\left\{1, \frac{q(c \mid c')p(c')}{q(c' \mid c)p(c)}\right\} = \min\left\{1, \frac{q(c \mid c')f(c')}{q(c' \mid c)f(c)}\right\}.
+A(c, c') := \min\left\{1, \frac{q(c \mid c')p(c')}{q(c' \mid c)p(c)}\right\} = \min\left\{1, \frac{q(c \mid c')f(c')}{q(c' \mid c)f(c)}\right\}.
 \end{equation}
 %
 \end{enumerate}
@@ -215,8 +215,8 @@ The transition distribution is then
 %
 \begin{equation}
 \pi(c' \mid c) := \begin{cases}
-q(c' \mid c)A(c', c) & \text{if $c \neq c'$ and}\\
-1 - \sum_{c' \neq c}q(c' \mid c)A(c', c) & \text{otherwise}.
+q(c' \mid c)A(c, c') & \text{if $c \neq c'$ and}\\
+1 - \sum_{c' \neq c}q(c' \mid c)A(c, c') & \text{otherwise}.
 \end{cases}
 \end{equation}
 %
