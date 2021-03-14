@@ -90,7 +90,7 @@ Z &= \sum_{c} \exp\left(\frac{1}{T}c^\top c\right)\\
 &= \left(\pi T\right)^{-d/2}\int \exp\left(-\frac{1}{T}\left(y^\top y - T \sum_{i \leq N} \log \left(2 \cosh\left(\frac{2}{T}y_i\right)\right)\right)\right) dy.\label{eq:norm_cost_ugly_integral}
 \end{align}
 %
-Hint: Apply the combinatorial trick from Theorem~\ref{thm:gibbs_factorizes}. Recall also that
+Hint: Apply Lemma~\ref{lem:sum_prod_exchange}. Recall also that
 %
 \begin{equation}
 2 \cosh(x) = \exp(x) + \exp(-x).

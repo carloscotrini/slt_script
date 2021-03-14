@@ -1,6 +1,10 @@
 \chapter{Deterministic annealing}
 \label{ch:da}
 
+\newcommand{\facprob}[4]{p_{#1}
+\left(#2\mid #3, #4\right)
+}
+
 \section{The problem of centroid-based clustering}
 \label{sec:problem}
 
@@ -82,24 +86,83 @@ Here, $T > 0$ is a hyper-parameter denoting the temperature and $\theta \in \mat
 The centroids are chosen to be hyper-parameters just for convenience.
 One could treat them as part of the hypothesis class, but this substantially complicates the analysis.
 
+Before we start, we need the following result, which we use often throughout the lecture:
+
+\begin{lemma}
+Let $N, K \in \mathbb{N}$ and let $\{ \mathcal{E}_{i,j} \mid i \leq N, j \leq K\}$ be an indexed set of values. Then
+%
+\begin{equation}
+\sum_{c \in \mathcal{C}} \prod_{i \leq N} \mathcal{E}_{i, c(i)} = \prod_{i \leq N} \sum_{j \leq K} \mathcal{E}_{i,j}.
+\label{eq:sum_prod_exchange}
+\end{equation}
+%
+\label{lem:sum_prod_exchange}
+\end{lemma}
+
+\begin{proof}
+
+%Observe that there is a bijection between $\mathcal{C}$ and $\{1, \ldots, K\}^N$. Therefore, we identify every function $c \in \mathcal{C}$ with the tuple $\left(c(1), \ldots, c(N)\right)$. Conversely, we identify every tuple $\left(c_1, \ldots, c_N\right) \in \{1, \ldots, K\}^N$, with the function $c$ that maps $i$ to $c_i$.
+%
+%\begin{align}
+%&\sum_{c \in \mathcal{C}} \prod_{i \leq N} \mathcal{E}_{i,c(i)}\\
+%&= \sum_{c \in \{1, \ldots, K\}^N} \prod_{i \leq N} \mathcal{E}_{i,c(i)}\\
+%&= \sum_{c_1 \leq K, \ldots, c_N \leq K} \prod_{i \leq N} \mathcal{E}_{i,c(i)}\\
+%&= \sum_{c_1 \leq K} \sum_{c_2 \leq K}\ldots \sum_{c_N \leq K} \prod_{i \leq N} \mathcal{E}_{i,c(i)}\\
+%&= \sum_{c_1 \leq K} \sum_{c_2 \leq K}\ldots \sum_{c_N \leq K} \mathcal{E}_{1,c(1)}\mathcal{E}_{2,c(2)} \ldots \mathcal{E}_{N,c(N)}\\
+%&= \sum_{c_1 \leq K} \left(\mathcal{E}_{1,c(1)}\sum_{c_2 \leq K} \left(\mathcal{E}_{1,c(1)} \ldots \sum_{c_N \leq K} \mathcal{E}_{N, c(N)}\ldots\right)\right)\\
+%&= \left(\sum_{c_N \leq K} \mathcal{E}_{N, c(N)}\right)\sum_{c_1 \leq K} \left(\mathcal{E}_{1,c(1)}\sum_{c_2 \leq K} \left(\mathcal{E}_{1,c(1)} \ldots \sum_{c_{N-1} \leq K} \mathcal{E}_{N-1, c(N-1)}\ldots\right)\right)\\
+%& \vdots\\\nonumber
+%&= \left(\sum_{c_N \leq K} \mathcal{E}_{N, c(N)}\right)\left(\sum_{c_{N-1} \leq K} \mathcal{E}_{N-1, c(N-1)}\right)\ldots \left(\sum_{c_2 \leq K} \mathcal{E}_{2, c(2)}\right)\left(\sum_{c_1 \leq K} \mathcal{E}_{1, c(1)}\right)\\
+%&= \left(\sum_{j \leq K} \mathcal{E}_{N, j}\right)\left(\sum_{j \leq K} \mathcal{E}_{N-1, j}\right)\ldots \left(\sum_{j \leq K} \mathcal{E}_{2, j}\right)\left(\sum_{j \leq K} \mathcal{E}_{1, j}\right)\\
+%&= \prod_{i \leq N} \sum_{j \leq K} \mathcal{E}_{i,j}.
+%\end{align}
+
+The proof is by induction on $N$. For the case of $N = 1$, observe that $\mathcal{C}$ has only $K$ elements, as there are only $K$ functions mapping $\{1\}$ to $\{1, \ldots, K\}$.
+%
+\begin{equation}
+\sum_{c \in \mathcal{C}} \prod_{i \leq N} \mathcal{E}_{i, c(i)} = \sum_{c \in \mathcal{C}} \mathcal{E}_{1, c(1)} = \sum_{j \leq K} \mathcal{E}_{1,j} = \prod_{i \leq N}\sum_{j \leq K} \mathcal{E}_{i,j}.
+\end{equation}
+
+Assume now that the results holds for some $N$. We demonstrate then that it also holds for $N + 1$. Observe that there is a bijection between $\mathcal{C}$ and $\{1, \ldots, K\}^N$. Therefore, we identify every function $c \in \mathcal{C}$ with the tuple $\left(c(1), \ldots, c(N)\right)$. Conversely, we identify every tuple $\left(c_1, \ldots, c_N\right) \in \{1, \ldots, K\}^N$, with the function $c$ that maps $i$ to $c_i$.
+
+%We use the notation $\sum_{c : \{1, \ldots, N + 1\} \to \{1, \ldots, K\}}$ to denote a sum over all functions mapping $\{1, \ldots, N + 1\}$ to $\{1, \ldots, K\}$.
+%
+\begin{align}
+&\sum_{c \in \mathcal{C}} \prod_{i \leq N + 1} \mathcal{E}_{i, c(i)}\\
+&=\sum_{\left(c_1, \ldots, c_{N+1}\right) \in \{1, \ldots, K\}^{N+1}} \prod_{i \leq N + 1} \mathcal{E}_{i, c_i}\\
+&=\sum_{\substack{\left(c_1, \ldots, c_{N}\right) \in \{1, \ldots, K\}^{N}\\
+c_{N+1} \leq K
+}} \prod_{i \leq N + 1} \mathcal{E}_{i, c_i}\\
+&=\sum_{\left(c_1, \ldots, c_{N}\right) \in \{1, \ldots, K\}^{N}} \sum_{c_{N+1} \leq K}\prod_{i \leq N + 1} \mathcal{E}_{i, c_i}\\
+&=\sum_{\left(c_1, \ldots, c_{N}\right) \in \{1, \ldots, K\}^{N}} \sum_{c_{N+1} \leq K}\left(\mathcal{E}_{N+1, c(N+1)}\prod_{i \leq N} \mathcal{E}_{i, c_i}\right)\\
+&=\left(\sum_{c_{N+1} \leq K}\mathcal{E}_{N+1, c(N+1)}\right) \sum_{\left(c_1, \ldots, c_{N}\right) \in \{1, \ldots, K\}^{N}} \prod_{i \leq N} \mathcal{E}_{i, c_i}\\
+&=\left(\sum_{c_{N+1} \leq K}\mathcal{E}_{N+1, c(N+1)} \right)\prod_{i \leq N} \sum_{j \leq K}\mathcal{E}_{i, j}\\
+&=\left(\sum_{j \leq K}\mathcal{E}_{N+1, j} \right)\prod_{i \leq N} \sum_{j \leq K}\mathcal{E}_{i, j}\\
+&= \prod_{i \leq N+1} \sum_{j \leq K}\mathcal{E}_{i, j}.
+\end{align}
+%
+\end{proof}
+
 \begin{theorem}
 A Gibbs distribution induced by the $K$-means cost function
 factorizes as follows:
 %
 \begin{equation}
-p(c \mid \theta, X) = \prod_{i \leq N} p(i \mapsto c(i) \mid \theta, X),
+p(c \mid \theta, X) = \prod_{i \leq N} \facprob{i}{c(i)}{\theta}{X},
 \label{eq:gibbs_distr_factorizes}
 \end{equation}
 %
 where
 %
 \begin{equation}
-p(i \mapsto k \mid \theta, X) \propto \exp\left(-\frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right).
+\facprob{i}{k}{\theta}{X} \propto \exp\left(-\frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right).
 \label{eq:gibbs_factors_da}
 \end{equation}
 %
 \label{thm:gibbs_factorizes}
 \end{theorem}
+
+Intuitively, $\facprob{i}{c(i)}{\theta}{X}$ is the probability of assigning $x_i$ to cluster $c(i)$.
 
 \begin{proof}
 The Gibbs distribution is
@@ -114,11 +177,10 @@ The numerator can be rewritten as follows:
 \exp\left(- \frac{1}{T}\sum_{i \leq N}\left\|x_i - \theta_{c(i)}\right\|^2\right) = \prod_{i \leq N}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right).
 \end{equation}
 
-We now apply the combinatorial trick that we studied in the lecture
-to rewrite the denominator. Unfortunately, I do not see a better way to explain this trick without the diagrams from the lecture.
+We now apply Lemma~\ref{lem:sum_prod_exchange}.
 %
 \begin{equation}
-\sum_{c \in \mathcal{C}} \exp\left(- \frac{1}{T}\sum_{i \leq N}\left\|x_i - \theta_{c(i)}\right\|^2\right) = \ldots = \prod_{i \leq N} \sum_{k \leq K} \exp\left(-\frac{1}{T}\left\|x_i = \theta_i\right\|^2\right).
+\sum_{c \in \mathcal{C}} \prod_{i \leq N}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right) = \prod_{i \leq N} \sum_{k \leq K} \exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)
 \end{equation}
 
 Putting these results together yields that
@@ -126,12 +188,12 @@ Putting these results together yields that
 \begin{align}
 p(c \mid \theta, X) &= \frac{\prod_{i \leq N}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)}{\prod_{i \leq N}\sum_{k \leq K}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)}\\
 &= \prod_{i \leq N}\frac{\exp\left(- \frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)}{\sum_{k \leq K}\exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)}\\
-&= \prod_{i \leq N}p(i \mapsto c(i) \mid \theta, X).
+&= \prod_{i \leq N}\facprob{i}{c(i)}{\theta}{X}.
 \end{align}
 \end{proof} 
 
 Theorem~\ref{thm:gibbs_factorizes} shows that we can compute $p(c \mid \theta, X)$ in just $O(NK)$-time.
-You just have to compute $\exp\left(- \frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)$, which is $O(1)$-time, for $i \leq N$ and $k \leq K$. Hence, computing $p(i, c(i) \mid \theta, X)$ takes $O(K)$-time, for $i \leq N$, yielding a total computing time of $O(NK)$.
+You just have to compute $\exp\left(- \frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)$, which is $O(1)$-time, for $i \leq N$ and $k \leq K$. Hence, computing $\facprob{i}{c(i)}{\theta}{X}$ takes $O(K)$-time, for $i \leq N$, yielding a total computing time of $O(NK)$.
 
 \section{Computing the centroids}
 \label{sec:computing_centroids_da}
@@ -211,7 +273,7 @@ an exercise.
 The set $\theta^*$ of centroids that maximize the entropy of $p(\cdot \mid \theta, X)$ must satisfy the following conditions.
 %
 \begin{equation}
-\theta^*_k = \frac{\sum_{i \leq N} p\left(i \mapsto k \mid \theta^*, X\right)x_i}{\sum_{i \leq N} p\left(i \mapsto k \mid \theta^*, X\right)},\text{ for $k \leq K$},
+\theta^*_k = \frac{\sum_{i \leq N} \facprob{i}{k}{\theta^*}{X}x_i}{\sum_{i \leq N} \facprob{i}{k}{\theta^*}{X}},\text{ for $k \leq K$},
 \label{eq:thm_stationarity_conds_centroids_da}
 \end{equation}
 %
@@ -240,13 +302,13 @@ So we start by applying Lemma~\ref{lem:stationarity_condition} on the left-hand 
 Apply now linearity of the expectation and the fact that $\mathbb{E}\left[\mathbf{1}A\right] = \prob\left(A\right)$ to get that
 %
 \begin{equation}
-\theta_k \sum_{i \leq N} p\left(C(i) = k \mid \theta, X\right) - \sum_{i \leq N}x_i \prob\left(C(i) = k \mid \theta, X\right) = 0, \text{ for $k \leq K$}.
+\theta_k \sum_{i \leq N} \prob\left(C(i) = k \mid \theta, X\right) - \sum_{i \leq N}x_i \prob\left(C(i) = k \mid \theta, X\right) = 0, \text{ for $k \leq K$}.
 \end{equation}
 
 The desired condition follows from this equation and the fact that 
 %
 \begin{equation}
-\prob\left(C(i) = k \mid \theta, X\right) = p(i \mapsto k \mid \theta, X).
+\prob\left(C(i) = k \mid \theta, X\right) = \facprob{i}{k}{\theta}{X}.
 \end{equation}
 \end{proof}
 
@@ -254,11 +316,11 @@ Unfortunately, Equation~\ref{eq:thm_stationarity_conds_centroids_da} does not gi
 procedure.
 
 \begin{enumerate}
-\item Set $t \gets 0$ and $\theta^(t)$ to an arbitrary value.
+\item Set $t \gets 0$ and $\theta^{(t)}$ to an arbitrary value.
 \item Set $t \gets t + 1$ and
 %
 \begin{equation}
-\theta^{(t+1)} \gets \frac{\sum_{i \leq N} p\left(i \mapsto k \mid \theta^{(t)}, X\right)x_i}{p\left(i \mapsto k \mid \theta^{(t)}, X\right)}.
+\theta^{(t+1)}_k \gets \frac{\sum_{i \leq N} \facprob{i}{k}{\theta}{X}x_i}{\sum_{i \leq N}\facprob{i}{k}{\theta}{X}}, \qquad \text{for $k \leq K$}.
 \end{equation}
 %
 This procedure converges to a local maximum of $H[p(\cdot \mid \theta, X)]$.
@@ -281,7 +343,9 @@ converges.
 
 We now collect all insights from this chapter and use them to propose
 an improved version of simulated annealing, called \emph{deterministic annealing}.
-Algorithm~\ref{algo:da_algo_da} provides the details. The idea of this procedure is the
+Algorithm~\ref{algo:da_algo_da} provides the details. This algorithm has some computational issues that we will address in a future version of the script. For a recommended implementation, please refer to Sections II.A.3 and II.A.4 of Rose's article~\cite{rose1998deterministic}. 
+
+The idea of this procedure is the
 following.
 
 \begin{enumerate}
@@ -321,13 +385,13 @@ random variables makes the whole procedure intractable.
 \While{$T > \epsilon$}
 \Repeat
 \State $\theta_0 \gets \theta$
-\State Compute $p\left(i \mapsto k \mid \theta_0, X\right)$, for $i \leq N$ and $k \leq K$
-\State $\displaystyle \theta \gets \frac{\sum_{i \leq N} p\left(i \mapsto k \mid \theta_0, X\right) x_i}{\sum_{i \leq N} p\left(i \mapsto k \mid \theta_0, X\right)}$
+\State Compute $\facprob{i}{k}{\theta_0}{X}$, for $i \leq N$ and $k \leq K$
+\State $\displaystyle \theta \gets \frac{\sum_{i \leq N} \facprob{i}{k}{\theta_0}{X} x_i}{\sum_{i \leq N} \facprob{i}{k}{\theta_0}{X}}$
 \Until{$\texttt{close}\left(\theta, \theta_0\right)$}
 \State Add a small amount of noise to each centroid in $\theta$.
 \State $T \gets \texttt{reduce}(T)$
 \EndWhile
-\State \textbf{return} $\theta$, $\{p\left(i \mapsto k \mid \theta, X\right) \mid i \leq N, k \leq K\}$
+\State \textbf{return} $\theta$, $\{\facprob{i}{k}{\theta}{X} \mid i \leq N, k \leq K\}$
 \EndFunction
 \end{algorithmic}
 \caption{Deterministic annealing}
@@ -419,11 +483,11 @@ sequence of lemmas whose proofs are left as exercises.
 
 \begin{theorem}
 \begin{equation}
-\lim_{T \to \infty} p\left(i \mapsto k \mid \theta, X\right) = \frac{1}{K}.
+\lim_{T \to \infty} \facprob{i}{k}{\theta}{X} = \frac{1}{K}.
 \end{equation}
 
 \begin{equation}
-\lim_{T \to 0} p\left(i \mapsto k \mid \theta, X\right) = \begin{cases}
+\lim_{T \to 0} \facprob{i}{k}{\theta}{X} = \begin{cases}
 1 & \text{ if $\theta_k$ is the centroid closest to $x_k$ and}\\
 0 & \text{ otherwise}.
 \end{cases}
@@ -501,13 +565,6 @@ A_{ik} = (x_i - \theta_k)\left(1 + \frac{2}{T}x_i^\top \theta_i\right) \qquad \t
 \end{lemma}
 
 \begin{proof}
-Start from
-%
-\begin{equation}
-\frac{\partial F}{\partial \theta_k} = - \frac{2}{T} \sum_{i \leq N} p\left(i,k \mid \theta, X\right)(x_i - \theta_k).
-\label{eq:start_eq_da}
-\end{equation}
-%
 Observe that, inside $\mathcal{B}$,
 %
 \begin{equation}
@@ -524,12 +581,19 @@ Hence,
 Therefore,
 %
 \begin{align}
-p\left(i,k \mid \theta, X\right) &= \frac{\exp\left(-\frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{k'}\right\|^2\right)}\\
+\facprob{i}{c(i)}{\theta}{X} &= \frac{\exp\left(-\frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{k'}\right\|^2\right)}\\
 &\approx \frac{\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_k\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}\\
 &= \frac{\left(1 + \frac{2}{T}x_i^\top \theta_{k}\right)}{\sum_{k' \leq K}\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}.\label{eq:simplified_factor_prob}
 \end{align}
 %
-The result follows from plugging (\ref{eq:simplified_factor_prob}) in Equation~(\ref{eq:start_eq_da}).
+The result follows from plugging (\ref{eq:simplified_factor_prob}) in the following equation:
+%Start from
+%
+\begin{equation}
+\frac{\partial F}{\partial \theta_k} = - \frac{2}{T} \sum_{i \leq N} \facprob{i}{k}{\theta}{X}(x_i - \theta_k).
+\label{eq:start_eq_da}
+\end{equation}
+%
 \end{proof}
 
 \begin{lemma}
@@ -640,7 +704,7 @@ tractable.
 Show that
 %
 \begin{equation}
-\sum_{c}p(c \mid X') p(c \mid X'') = \prod_{i \leq N}\sum_{k \leq K}p\left(i \mapsto k \mid X'\right)p\left(i \mapsto k \mid X''\right).
+\sum_{c}p(c \mid \theta, X') p(c \mid \theta, X'') = \prod_{i \leq N}\sum_{k \leq K}\facprob{i}{k}{\theta}{X'}\facprob{i}{k}{\theta}{X''}.
 \end{equation}
 %
 Show also that computing this takes $O(NK)$-time.

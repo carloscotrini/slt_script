@@ -90,13 +90,13 @@ R(c, Q, X) = \sum_{x \in \mathcal{X}} D_{KL}\left[\hat{p}\left(\cdot \mid x_i\ri
 Any Gibbs distribution $p(\cdot \mid X)$ induced by $R$ and $X$ factorizes as follows
 %
 \begin{equation}
-p(c \mid Q, X) = \prod_{x \in X} p(x \mapsto c(x) \mid Q, X),
+p(c \mid Q, X) = \prod_{x \in X} \facprob{x}{c(x)}{Q}{X},
 \end{equation}
 %
 where
 %
 \begin{equation}
-p(x \mapsto c(x) \mid Q, X) \propto \exp\left(-\frac{1}{T}D_{KL}\left[\hat{p}\left(\cdot \mid x\right) \mid q_{c(x)}\left(\cdot \right)\right]\right).
+\facprob{x}{k}{Q}{X} \propto \exp\left(-\frac{1}{T}D_{KL}\left[\hat{p}\left(\cdot \mid x\right) \mid q_{k}\left(\cdot \right)\right]\right), \qquad \text{for $k \leq K$}.
 \end{equation}
 %
 \end{lemma}
@@ -115,7 +115,7 @@ The centroids that maximize the entropy of a Gibbs distribution can be computed 
 Show that the set $Q^*$ of centroids that maximize the entropy of $p(\cdot \mid Q, X)$ must satisfy the conditions:
 %
 \begin{equation}
-q^*_k(\cdot) = \frac{\sum_{x \in X}p(x \mapsto k \mid Q^*, X)\hat{p}\left(\cdot \mid x\right)}{\sum_{x \in X} p(x \mapsto k \mid Q^*, X)}, \quad \text{for $k \leq K$,}
+q^*_k(\cdot) = \frac{\sum_{x \in X}\facprob{x}{k}{Q^*}{X}\hat{p}\left(\cdot \mid x\right)}{\sum_{x \in X} \facprob{x}{k}{Q^*}{X}}, \quad \text{for $k \leq K$,}
 \end{equation}
 %
 \end{exercise}
@@ -144,13 +144,13 @@ Figure~\ref{fig:phase_transitions_hc} illustrates the behavior of the centroids 
 \While{$T > \epsilon$}
 \Repeat
 \State $Q_0 \gets Q$
-\State Compute $p\left(x \mapsto k \mid Q_0, X\right)$, for $x \in X$ and $k \leq K$
-\State $\displaystyle Q \gets \frac{\sum_{x \in X} p\left(x \mapsto k \mid Q_0, X\right) \hat{p}\left(\cdot \mid x\right)}{\sum_{x \in X} p\left(x \mapsto k \mid Q_0, X\right)}$, for $k \leq K$.
+\State Compute $\facprob{x}{k}{Q_0}{X}$, for $x \in X$ and $k \leq K$
+\State $\displaystyle Q \gets \frac{\sum_{x \in X} \facprob{x}{k}{Q_0}{X} \hat{p}\left(\cdot \mid x\right)}{\sum_{x \in X} \facprob{x}{k}{Q_0}{X}}$, for $k \leq K$.
 \Until{$\texttt{close}\left(Q, Q_0\right)$}
 \State Add a small amount of noise to each centroid in $Q$.
 \State $T \gets \texttt{reduce}(T)$
 \EndWhile
-\State \textbf{return} $Q$, $\{p\left(x \mapsto k \mid Q, X\right) \mid x \in X, k \leq K\}$
+\State \textbf{return} $Q$, $\{\facprob{x}{k}{Q}{X} \mid x \in X, k \leq K\}$
 \EndFunction
 \end{algorithmic}
 \caption{Histogram clustering via deterministic annealing}
