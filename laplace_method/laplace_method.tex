@@ -26,7 +26,7 @@ Let $f : \mathbb{R}^D \to \mathbb{R}$ be a twice continuously differentiable fun
 
 Intuitively, Laplace's method suggests to approximate $\int \exp\left(-M f(y)\right) dy$ with $\exp\left(-M f(y_0)\right)$ if $M$ is sufficiently large.
 
-Figure~\ref{fig:laplace} illustrates the behavior of $\exp\left(-M f(y)\right)$, with $f(y) = -1 + y^2 + \sin(5y)$. Observe that although $\int \exp\left(-M f(y)\right) dy$ is analytically tractable, as $M \to \infty$, the area under the curve is mostly around the minimum of $f$.
+Figure~\ref{fig:laplace} illustrates the behavior of $\exp\left(-M f(y)\right)$, with $f(y) = -1 + y^2 + \sin(5y)$. Observe that although $\int \exp\left(-M f(y)\right) dy$ is analytically intractable, as $M \to \infty$, the area under the curve is mostly around the minimum of $f$.
 
 \begin{figure}[hbtp]
 \centering
@@ -60,22 +60,32 @@ p(c) := \frac{1}{Z}\exp\left(-\frac{1}{T}R(c)\right),
 where
 %
 \begin{equation}
-Z := \sum_{c \in \mathcal{C}} \exp\left(-\frac{1}{T}R(c)\right) \qquad \text{and} \qquad R(c) := - c^\top c.
+Z := \sum_{c \in \mathcal{C}} \exp\left(-\frac{1}{T}R(c)\right) \qquad \text{and} \qquad R(c) := - \sum_{i, j \leq N}c_ic_j.
 \end{equation}
 
-The normalization constant is a sum over $2^N$ elements and becomes intractable for large $N$. The following four exercises give a recipe for approximating this constant using Laplace's method.
+The normalization constant is a sum over $2^N$ elements and becomes intractable for large $N$. The following exercises illustrate a recipe, formalized in Section~\ref{sec:laplace_recipe}, for approximating this constant using Laplace's method.
 
-\begin{exercise}{[Complete the square]}
+\begin{exercise}{[Square the cost]}
 Show that
 %
 \begin{equation}
-\exp\left(\frac{1}{T}c^\top c\right) = \left(\pi T\right)^{-d/2}\int\exp\left(-\frac{1}{T}y^\top y\right) \prod_{i \leq N}\exp\left(\frac{2}{T}y_ic_i\right) dy.
+\exp\left(-\frac{1}{T}R(c)\right) = \exp\left(\frac{1}{T}\left(\sum_{i \leq N}c_i\right)^2\right)
 \end{equation}
 %
-Hint: Start here
+\end{exercise}
+
+\begin{exercise}{[Integrate a Gaussian]}
+
+Starting from here
 %
 \begin{equation}
-\left(\pi T\right)^{d/2} = \int \exp\left(-\frac{1}{T}\left\|y - c\right\|^2\right)dy.
+\left(\pi T\right)^{d/2} = \int \exp\left(-\frac{1}{T}\left(y - \sum_{i \leq N}c_i\right)^2\right)dy,
+\end{equation}
+%
+show that
+%
+\begin{equation}
+\exp\left(\frac{1}{T}\left(\sum_{i \leq N}c_i\right)^2\right) = \left(\pi T\right)^{-d/2}\int\exp\left(-\frac{1}{T}y^2\right) \prod_{i \leq N}\exp\left(\frac{2}{T}y c_i\right) dy.
 \end{equation}
 %
 \end{exercise}
@@ -84,10 +94,10 @@ Hint: Start here
 Complete the following derivation
 %
 \begin{align}
-Z &= \sum_{c} \exp\left(\frac{1}{T}c^\top c\right)\\
-&= \left(\pi T\right)^{-d/2}\int\exp\left(-\frac{1}{T}y^\top y\right) \sum_{c}\prod_{i \leq N}\exp\left(\frac{2}{T}y_ic_i\right) dy\\
+Z &= \sum_{c} \exp\left(\frac{1}{T}\left(\sum_{i \leq N}c_i\right)^2\right)\\
+&= \left(\pi T\right)^{-d/2}\int\exp\left(-\frac{1}{T}y^2\right) \sum_{c}\prod_{i \leq N}\exp\left(\frac{2}{T}yc_i\right) dy\\
 &= \ldots \\
-&= \left(\pi T\right)^{-d/2}\int \exp\left(-\frac{1}{T}\left(y^\top y - T \sum_{i \leq N} \log \left(2 \cosh\left(\frac{2}{T}y_i\right)\right)\right)\right) dy.\label{eq:norm_cost_ugly_integral}
+&= \left(\pi T\right)^{-d/2}\int \exp\left(-\frac{1}{T}\left(y^2 - T \sum_{i \leq N} \log \left(2 \cosh\left(\frac{2}{T}y\right)\right)\right)\right) dy.\label{eq:norm_cost_ugly_integral}
 \end{align}
 %
 Hint: Apply Lemma~\ref{lem:sum_prod_exchange}. Recall also that
@@ -99,7 +109,7 @@ Hint: Apply Lemma~\ref{lem:sum_prod_exchange}. Recall also that
 \end{exercise}
 
 \begin{exercise}{[Apply Laplace's method]}
-Show that, when $T > 2$, the conditions to apply Laplace's method hold. As a result, the integral in Equation~\ref{eq:norm_cost_ugly_integral} could be approximated to 1. Is this a good estimation?
+Show that, when $T > 2$, the conditions to apply Laplace's method hold. As a result, the integral in Equation~\ref{eq:norm_cost_ugly_integral} could be approximated to 1.
 \end{exercise}
 
 It is still possible to apply Laplace's method when $T \leq 2$, and approximate the integral above to 1. However, doing this formally requires a more thorough understanding of the proof of Laplace's method. An appendix describing this approximation is left for a future version of this script.
@@ -110,13 +120,13 @@ It is still possible to apply Laplace's method when $T \leq 2$, and approximate 
 The section before illustrates the following analytical strategy to estimate normalization constants:
 
 \begin{enumerate}
-\item \textbf{Rewrite cost function} Rewrite your cost function as the squared norm of some vector, so that
+\item \textbf{Square the cost} Rewrite your cost function as the squared norm of some vector, so that
 %
 \begin{equation}
 \exp\left(-\frac{1}{T}R(c, X)\right) = \mathit{const}\exp\left(g(c)^\top g(c)\right).
 \end{equation}
 %
-\item \textbf{Complete the square} Recall that
+\item \textbf{Integrate a Gaussian} Recall that
 %
 \begin{equation}
 \pi^{d/2} = \int \exp\left(-\left\|y - g(c)\right\|^2\right) dy.
@@ -128,7 +138,7 @@ Use this to derive that
 \exp\left(g(c)^\top g(c)\right) = \pi^{-d/2}\int \exp\left(-y^\top y + 2y^\top g(c)\right)dy.
 \end{equation}
 %
-\item \textbf{Rewrite normalization constant} Show that the normalization constant can be expressed as follows
+\item \textbf{Rewrite the normalization constant} Show that the normalization constant can be expressed as follows
 %
 \begin{align}
 Z &= \sum_{c} \exp\left(-\frac{1}{T}R(c, X)\right)\\ 
@@ -169,7 +179,7 @@ Observe that the normalization constant of the Gibbs distribution induced by thi
 %
 %We first rewrite the cost function into a sum, where each term in the sum is a quadratic form. Afterwards, we introduce dummy variables and use the technique of completing the square to 
 
-\section{Rewrite cost function}
+\section{Square the cost}
 \label{sec:cost_function_la}
 
 \begin{exercise}
@@ -205,7 +215,7 @@ This result only implies that
 %
 This is not an expression of the form $\textit{const} \exp\left(g(c)^\top g(c)\right)$, as recommended in Section~\ref{sec:laplace_recipe}. However, we show next how to adapt the cost function so that we can still follow all the other steps from Section~\ref{sec:laplace_recipe}.
 
-\section{Complete the square}
+\section{Integrate a Gaussian}
 
 Recall the Gibbs distribution
 %
@@ -240,7 +250,7 @@ For $k \leq K$, define a dummy variable $y_k$. Show that
 %
 \begin{align}
 &exp\left(\frac{1}{2NT}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2\right)\\
-&\qquad = \left(\frac{2\pi T}{N}\right)^{\frac{D}{2}} \int \exp\left(- \frac{N}{2T}\left\|y_k\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y_k\right)dy_k
+&\qquad = \left(\frac{2\pi T}{N}\right)^{-\frac{D}{2}} \int \exp\left(- \frac{N}{2T}\left\|y_k\right\|^2 + \frac{1}{T}\sum_{i \leq N}M_{ik}x_i^\top y_k\right)dy_k
 \label{eq:partition_trick}
 \end{align}
 %
@@ -255,7 +265,7 @@ Observe that this is the normalization constant for a multivariate Gaussian dist
 Using the fact that this is the normalization constant of a Gaussian, we have that
 %
 \begin{align}
-&\left(\frac{2\pi T}{N}\right)^{-\frac{D}{2}}\\
+&\left(\frac{2\pi T}{N}\right)^{\frac{D}{2}}\\
  &= \int \exp\left(-\frac{N}{2T} \left\|y_k - \frac{1}{N}\sum_{i \leq N}M_{ik}x_i\right\|^2\right)dy_k\\
 &= \int \exp\left(-\frac{N}{2T}\left[ \left\|y_k\right\|^2 - \frac{2}{N}y_k^\top\sum_{i \leq N}M_{ik}x_i + \frac{1}{N^2}\left\|\sum_{i \leq N}M_{ik}x_i\right\|^2\right]\right)dy_k\\
 &= \exp\left(-\frac{N}{2T}\frac{1}{N^2}\left\|\sum_{i \leq N}M_{ik}x_i\right\|^2\right)\int \exp\left(-\frac{N}{2T}\left[ \left\|y_k\right\|^2 - \frac{2}{N}y_k^\top\sum_{i \leq N}M_{ik}x_i\right]\right)dy_k\\
@@ -278,7 +288,7 @@ Z_X = \alpha \int\exp\left(-\frac{N}{2T}\sum_{k \leq K} \left\|y_k\right\|^2 + \
 where
 %
 \begin{align}
-\alpha &:= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}, \text{ and}\\
+\alpha &:= e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{-\frac{KD}{2}}, \text{ and}\\
 \int g(y_1, \ldots, y_K)d\mathbf{y} &:= \int \int \ldots \int g(y_1, \ldots, y_K) dy_1 dy_2\ldots dy_K.
 \end{align}
 
@@ -318,7 +328,7 @@ Applying this property above gives us the following.
 &= \alpha\int \exp\left(- \frac{N}{2T}\sum_{k \leq K}\left\|y_k\right\|^2\right)\sum_{M}\prod_{i \leq N}\exp\left(\frac{1}{T}\sum_{k \leq K}M_{ik}x_i^\top y_k\right)d\mathbf{y}.
 \end{align}
 
-Given $M \in \{0, 1\}^{N \times K}$, we now define an auxiliary function $c_M : \{1, \ldots, N\} \to \{1, \ldots, K\}$. For $i \leq N$, $c_M(i) = k$ iff $M_{ik} = 1$. Observe that $c_M$ is well defined as $M \in \{0, 1\}^{N \times K}$ and $\sum_k M_{ik} = 1$. As a result, $\sum_k {M_{ik}}x_i^\top y_k = x_i^\top y_{c(i)}$. Observe now that
+We now apply Lemma~\ref{lem:sum_prod_exchange}. To do this, given $M \in \{0, 1\}^{N \times K}$, we define an auxiliary function $c_M : \{1, \ldots, N\} \to \{1, \ldots, K\}$. For $i \leq N$, $c_M(i) = k$ iff $M_{ik} = 1$. Observe that $c_M$ is well defined as $M \in \{0, 1\}^{N \times K}$ and $\sum_k M_{ik} = 1$. As a result, $\sum_k {M_{ik}}x_i^\top y_k = x_i^\top y_{c(i)}$. Observe then the following:
 %
 \begin{align}
 &\sum_{M \in \{0, 1\}^{N \times K}}\prod_{i \leq N}\exp\left(\frac{1}{T}\sum_{k \leq K}M_{ik}x_i^\top y_k\right) \\
@@ -344,7 +354,7 @@ If we apply this to the equation above, we get
 Let $\mathbf{y}$ be the vector of real variables resulting from the concatenation of $y_1, y_2, \ldots, y_k$. Equation~\ref{eq:monster_integral} can then be rewritten as
 %
 \begin{equation}
-Z_X = e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\int \exp\left( - \frac{N}{T}f_X(\mathbf{y}) \right)d\mathbf{y},
+Z_X = e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{-\frac{KD}{2}}\int \exp\left( - \frac{N}{T}f_X(\mathbf{y}) \right)d\mathbf{y},
 \end{equation}
 %
 where
@@ -352,6 +362,13 @@ where
 \begin{equation}
 f_X(\mathbf{y}) = \frac{1}{2}\sum_{k \leq K}\left\|y_k\right\|^2 - \frac{T}{N}\sum_{i \leq N}\log\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right).
 \end{equation}
+
+The exercises below show that when $T > 1$, the Hessian of $f_X$ evaluated at any point is positive definite. Therefore, $f_X$ has a unique global minimum and $H$, the Hessian evaluated at that minimum, is positive definite. We can then estimate $Z_X$ with
+%
+\begin{equation}
+Z_X \approx e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{-\frac{KD}{2}}\left|\frac{NH}{2\pi T}\right|^{-\frac{1}{2}}.
+\end{equation}
+%
 
 %
 %Recall now that $f_X(\mathbf{y})$'s second-order Taylor expansion at $\mathbf{y}^* \in \mathbb{R}^{KD}$ is given by
@@ -385,7 +402,7 @@ f_X(\mathbf{y}) = \frac{1}{2}\sum_{k \leq K}\left\|y_k\right\|^2 - \frac{T}{N}\s
 %\end{proof}
 
 \begin{exercise}
-Show how to compute $\mathbf{y}^*$.
+Show how to estimate $\mathbf{y}^*$, the minimum of $f_X$.
 \end{exercise}
 
 \begin{proof}
@@ -405,11 +422,11 @@ Hence, for $k \leq K$, $\frac{\partial f_X}{\partial y_k}= 0$ implies that
 %
 $$y_k = \sum_{i \leq N}\frac{x_i\exp\left(\frac{1}{T}x_i^\top y_k\right)}{N\sum_{k' \leq K}\exp\left(\frac{1}{T}x_i^\top y_{k'}\right)}.$$
 %
-This transcendental equation, can be solved iteratively, using an EM-like procedure.
+A solution for this transcendental equation can be approximated iteratively, using an EM-like procedure.
 \end{proof}
 
 \begin{exercise}
-Show how to compute $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$.
+Show how to compute the Hessian matrix $\frac{\partial^2 f_X}{\partial \mathbf{y}^2}$.
 \end{exercise}
 
 \begin{proof}
@@ -428,19 +445,56 @@ $$\frac{\partial^2 f_X}{\partial \mathbf{y}^2} =
 %
 Please be careful to observe that $\frac{\partial^2 f_X}{\partial y_k \partial y_\ell}$ is a \emph{matrix}! In particular, if $k = \ell$, then one can show that
 %
-$$\frac{\partial^2 f_X}{\partial y_k^2} = I - \frac{1}{TN}\sum_{i \leq N} x_i x_i^\top P_{ik}\left(1 - P_{ik}\right),$$
+\begin{equation}
+\frac{\partial^2 f_X}{\partial y_k^2} = I - \frac{1}{TN}\sum_{i \leq N} x_i x_i^\top P_{ik} + \frac{1}{TN}\sum_{i \leq N} x_i x_i^\top P^2_{ik},
+\end{equation}
 %
 where 
 %
-$$P_{ik} = \frac{\exp\left(\frac{1}{T}x_i^\top y_k\right)}{\sum_k \exp\left(\frac{1}{T}x_i^\top y_k\right)}.$$
+\begin{equation}
+P_{ik} = \frac{\exp\left(\frac{1}{T}x_i^\top y_k\right)}{\sum_k \exp\left(\frac{1}{T}x_i^\top y_k\right)}.
+\end{equation}
+%
 When $k \neq \ell$, one can show that
 %
-$$\frac{\partial^2 f_X}{\partial y_k \partial y_\ell} = \frac{1}{TN}\sum_{i \leq N} x_i x_i^\top P_{ik}P_{i\ell}.$$
+\begin{equation}
+\frac{\partial^2 f_X}{\partial y_k \partial y_\ell} = \frac{1}{TN}\sum_{i \leq N} x_i x_i^\top P_{ik}P_{i\ell}.
+\end{equation}
 %
 \end{proof}
 
-It can be shown that $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$ is positive definite, when $N$ is sufficiently large and $T$ is not too low\footnote{A more precise statement will be done for next year. I still have not found a simple way to demonstrate this.}. One can then apply Laplace's method to do the following approximation:
+\begin{exercise}
+Show that if $T > 1$, then the Hessian is positive definite at any point.
+\end{exercise}
+
+\begin{proof}
+Let $z = \left(z_1, \ldots, z_K\right)$. Observe that
 %
-\begin{equation}
-Z_X = e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y^*}) \right).
-\end{equation}
+\begin{align}
+z^\top \frac{\partial^2 f_X}{\partial \mathbf{y}^2} z &= \sum_{k \leq K} \left(z_k^\top z_k - \frac{1}{TN}\sum_{i \leq N}z_k^\top x_i x_i^\top z_k P_{ik}\right) +\\
+& \sum_{k, \ell \leq K} z_k^\top\left(\frac{1}{TN}\sum_{i \leq N}x_ix_i^\top P_{ik}P_{i\ell}\right)z_\ell\\
+&= \sum_{k \leq K} \left(z_k^\top z_k - \frac{1}{TN}\sum_{i \leq N}z_k^\top x_i x_i^\top z_k P_{ik}\right) +\\
+& \frac{1}{TN}\sum_i\left(\sum_{k} z_kP_{ik}\right)^\top x_ix_i^\top \left(\sum_{k} z_kP_{ik}\right)\\
+&\geq \sum_{k \leq K} \left(z_k^\top z_k - \frac{1}{TN}\sum_{i \leq N}z_k^\top x_i x_i^\top z_k P_{ik}\right)\\
+&= \sum_{k \leq K} z_k^\top z_k - \frac{1}{TN}\sum_{i \leq N}\sum_{k}P_{ik}z_k^\top x_i x_i^\top z_k\\
+&\geq \sum_{k \leq K} z_k^\top z_k - \frac{1}{TN}\sum_{i \leq N}\sum_{k}z_k^\top z_k.
+\end{align}
+
+The last inequality follows from the fact that $P_{ik} \leq 1$ and that any entry of $x_ix_i^\top$ is at most 1 as $x_i$ is a unit vector, for $i \leq N$. Observe that if $T > 1$, then the right hand side is positive. This implies that the Hessian is positive definite at any point, when $T > 1$.
+%
+\end{proof}
+
+%It can be shown that $\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}$ is positive definite, when $T > 1$. One can then apply Laplace's method to do the following approximation:
+%%
+%\begin{equation}
+%Z_X = e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}}\exp\left( - \frac{N}{T}f_X(\mathbf{y^*}) \right).
+%\end{equation}
+
+%\section{Conclusion}
+%
+%In this section, we studied an analytical technique for approximating certain normalization constants. The technique works in four steps:
+%
+%\begin{enumerate}
+%\item Write the cost $R(c, X)$ as the squared norm $g(c)^\top g(c)$ of some function $g$.
+%\item Use the normalization constant of a Gaussian to rewrite the term $\exp\left(-\frac{1}{T}R(c, X)\right)$
+%\end{enumerate}
