@@ -60,7 +60,7 @@ p(c) := \frac{1}{Z}\exp\left(-\frac{1}{T}R(c)\right),
 where
 %
 \begin{equation}
-Z := \sum_{c \in \mathcal{C}} \exp\left(-\frac{1}{T}R(c)\right) \qquad \text{and} \qquad R(c) := - \sum_{i, j \leq N}c_ic_j.
+Z := \sum_{c \in \mathcal{C}} \exp\left(-\frac{1}{T}R(c)\right) \qquad \text{and} \qquad R(c) := - \left(1 + \sum_{i \leq N}c_i\right)^2.
 \end{equation}
 
 The normalization constant is a sum over $2^N$ elements and becomes intractable for large $N$. The following exercises illustrate a recipe, formalized in Section~\ref{sec:laplace_recipe}, for approximating this constant using Laplace's method.
@@ -69,24 +69,25 @@ The normalization constant is a sum over $2^N$ elements and becomes intractable 
 Show that
 %
 \begin{equation}
-\exp\left(-\frac{1}{T}R(c)\right) = \exp\left(\frac{1}{T}\left(\sum_{i \leq N}c_i\right)^2\right)
+\exp\left(-\frac{1}{T}R(c)\right) = \exp\left(\frac{1}{T}\left(1 + \sum_{i \leq N}c_i\right)^2\right)
 \end{equation}
 %
 \end{exercise}
 
-\begin{exercise}{[Integrate a Gaussian]}
+\begin{exercise}{[Complete the square]}
 
 Starting from here
 %
 \begin{equation}
-\left(\pi T\right)^{d/2} = \int \exp\left(-\frac{1}{T}\left(y - \sum_{i \leq N}c_i\right)^2\right)dy,
+\left(\pi T\right)^{1/2} = \int \exp\left(-\frac{1}{T}\left(y - \left(1 + \sum_{i \leq N}c_i\right)^2\right)\right)dy,
 \end{equation}
 %
 show that
 %
-\begin{equation}
-\exp\left(\frac{1}{T}\left(\sum_{i \leq N}c_i\right)^2\right) = \left(\pi T\right)^{-d/2}\int\exp\left(-\frac{1}{T}y^2\right) \prod_{i \leq N}\exp\left(\frac{2}{T}y c_i\right) dy.
-\end{equation}
+\begin{align*}
+&\exp\left(\frac{1}{T}\left(1 + \sum_{i \leq N}c_i\right)^2\right)\\ 
+&= \left(\pi T\right)^{-1/2}\int\exp\left(-\frac{1}{T}y^2 + \frac{2}{T}y\right) \prod_{i \leq N}\exp\left(\frac{2}{T}y c_i\right) dy.
+\end{align*}
 %
 \end{exercise}
 
@@ -94,11 +95,17 @@ show that
 Complete the following derivation
 %
 \begin{align}
-Z &= \sum_{c} \exp\left(\frac{1}{T}\left(\sum_{i \leq N}c_i\right)^2\right)\\
-&= \left(\pi T\right)^{-d/2}\int\exp\left(-\frac{1}{T}y^2\right) \sum_{c}\prod_{i \leq N}\exp\left(\frac{2}{T}yc_i\right) dy\\
+Z &= \sum_{c} \exp\left(\frac{1}{T}\left(1 + \sum_{i \leq N}c_i\right)^2\right)\\ 
+&= \left(\pi T\right)^{-1/2}\int\exp\left(-\frac{1}{T}y^2 + \frac{2}{T}y\right) \prod_{i \leq N}\exp\left(\frac{2}{T}y c_i\right) dy\\
 &= \ldots \\
-&= \left(\pi T\right)^{-d/2}\int \exp\left(-\frac{1}{T}\left(y^2 - T \sum_{i \leq N} \log \left(2 \cosh\left(\frac{2}{T}y\right)\right)\right)\right) dy.\label{eq:norm_cost_ugly_integral}
+&= \left(\pi T\right)^{-1/2}\int \exp\left(-\frac{1}{T}f(y)\right) dy,\label{eq:norm_cost_ugly_integral}
 \end{align}
+%
+where
+%
+\begin{equation}
+f(y) = y^2 - 2 y - T N \log \left(2 \cosh\left(\frac{2}{T}y\right)\right).
+\end{equation}
 %
 Hint: Apply Lemma~\ref{lem:sum_prod_exchange}. Recall also that
 %
@@ -109,10 +116,21 @@ Hint: Apply Lemma~\ref{lem:sum_prod_exchange}. Recall also that
 \end{exercise}
 
 \begin{exercise}{[Apply Laplace's method]}
-Show that, when $T > 2$, the conditions to apply Laplace's method hold. As a result, the integral in Equation~\ref{eq:norm_cost_ugly_integral} could be approximated to 1.
+Show that $f$ has a unique global minimum at a point $y^*$ such that
+%
+\begin{equation}
+y^* = 1 + N \tanh\left(\frac{2}{T}y^*\right).
+\end{equation}
+% 
+Furthermore, show that $\frac{df}{dy}\bigr|_{y^*} > 0$ for sufficiently large $N$ and sufficiently low $T$.
 \end{exercise}
 
-It is still possible to apply Laplace's method when $T \leq 2$, and approximate the integral above to 1. However, doing this formally requires a more thorough understanding of the proof of Laplace's method. An appendix describing this approximation is left for a future version of this script.
+As a result, if we apply Laplace's method for sufficiently large $N$ and low $T$, the normalization constant can be approximated to
+%
+\begin{equation}
+\left(\pi T\right)^{-3/2}\left(\frac{df}{dy}\bigr|_{y^*}\right)^{-1/2}\exp\left(-\frac{1}{T}f(y^*)\right).
+\end{equation}
+%
 
 \section{Using Laplace's method to approximate intractable normalization constants}
 \label{sec:laplace_recipe}
@@ -126,7 +144,7 @@ The section before illustrates the following analytical strategy to estimate nor
 \exp\left(-\frac{1}{T}R(c, X)\right) = \mathit{const}\exp\left(g(c)^\top g(c)\right).
 \end{equation}
 %
-\item \textbf{Integrate a Gaussian} Recall that
+\item \textbf{Complete the square} Recall that
 %
 \begin{equation}
 \pi^{d/2} = \int \exp\left(-\left\|y - g(c)\right\|^2\right) dy.
@@ -215,7 +233,7 @@ This result only implies that
 %
 This is not an expression of the form $\textit{const} \exp\left(g(c)^\top g(c)\right)$, as recommended in Section~\ref{sec:laplace_recipe}. However, we show next how to adapt the cost function so that we can still follow all the other steps from Section~\ref{sec:laplace_recipe}.
 
-\section{Integrate a Gaussian}
+\section{Complete the square}
 
 Recall the Gibbs distribution
 %
@@ -400,6 +418,8 @@ Z_X \approx e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{-\frac{KD}{2}}\left|
 %&= \left(\frac{2\pi T}{N}\right)^{\frac{KD}{2}} \left(2\pi\right)^{D/2}\left|\left.\frac{\partial^2 f_X}{\partial \mathbf{y}^2}\right|_{\mathbf{y}^*}\right|^{-\frac{1}{2}}\exp\left(-\frac{1}{2T}-\frac{N}{T}f_X(\mathbf{y}^*)\right).
 %\end{align*}
 %\end{proof}
+
+The conditions for Laplace's method still hold for $T \leq 1$, but the proof is more involved and is left for a future version of the script.
 
 \begin{exercise}
 Show how to estimate $\mathbf{y}^*$, the minimum of $f_X$.
