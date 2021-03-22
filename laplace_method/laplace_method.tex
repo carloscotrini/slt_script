@@ -122,14 +122,14 @@ Show that $f$ has a unique global minimum at a point $y^*$ such that
 y^* = 1 + N \tanh\left(\frac{2}{T}y^*\right).
 \end{equation}
 % 
-Furthermore, show that $\frac{df}{dy}\bigr|_{y^*} > 0$ for sufficiently large $N$ and sufficiently low $T$.
+Furthermore, show that $\frac{df}{dy}\bigr|_{y^*} > 0$ for sufficiently large $N$.
 \end{exercise}
 
-As a result, if we apply Laplace's method for sufficiently large $N$ and low $T$, the normalization constant can be approximated to
+As a result, if we apply Laplace's method for sufficiently large $N$, the normalization constant can be approximated to $\exp\left(-\frac{1}{T}f(y^*)\right)$.
 %
-\begin{equation}
-\left(\pi T\right)^{-3/2}\left(\frac{df}{dy}\bigr|_{y^*}\right)^{-1/2}\exp\left(-\frac{1}{T}f(y^*)\right).
-\end{equation}
+%\begin{equation}
+%\left(\pi T\right)^{-3/2}\left(\frac{df}{dy}\bigr|_{y^*}\right)^{-1/2}\exp\left(-\frac{1}{T}f(y^*)\right).
+%\end{equation}
 %
 
 \section{Using Laplace's method to approximate intractable normalization constants}
@@ -187,7 +187,7 @@ Therefore, it is required that $\sum_{k \leq K} M_{ik} = 1$, for any $i \leq N$.
 Our goal is to use maximum entropy to train a cluster assignment, using the following cost function
 %
 \begin{equation}
-R(M, X) = \frac{1}{N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j.
+R(M, X) = -\frac{1}{N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j.
 \end{equation}
 %
 
@@ -211,17 +211,37 @@ R(M, X) = -\frac{1}{2N}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2
 
 \begin{proof}
 %
+Observe that, $M^2_{ik} = M_{ik}$, since $M_{ik} \in \{0, 1\}$. Furthermore, $x_i^\top x_i = 1$, as $x_i$ is a unit vector, for $i \leq N$. We now prove this auxiliary result.
+%
 \begin{align}
-R(M, X) &= -2\left(\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j\right)\\
-&= -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j\\
-&= -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j -\frac{1}{2N}\sum_{j < i \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j\\
-&= -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j-\frac{1}{2N}\sum_{j < i \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j+\\
-& -\frac{1}{2N}\sum_{i} \sum_{k \leq K} M_{ik}M_{ik}x_i^\top x_i+\frac{1}{2N}\sum_{i} \sum_{k \leq K} M_{ik}M_{ik}x_i^\top x_i\\
-&= -\frac{1}{2N}\sum_{k \leq K}\sum_{i, j \leq N}  M_{ik}M_{jk}x_i^\top x_j + \frac{1}{2N}\sum_{i} \sum_{k \leq K} M_{ik}M_{ik}x_i^\top x_i\\
-&= - \frac{1}{2N}\sum_{k \leq K}\sum_{i, j \leq N} M_{ik}M_{jk} x_i^\top x_j + \frac{1}{2N}N.\\
-&= - \frac{1}{2N}\sum_{k \leq K}\sum_{i, j \leq N} M_{ik}M_{jk} x_i^\top x_j + \frac{1}{2}.\\
-&= - \frac{1}{2N}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2 + \frac{1}{2}.
+\sum_{k \leq K} \sum_{i \leq N} M_{ik}^2x_i^\top x_i
+= \sum_{k \leq K} \sum_{i \leq N} M_{ik}^2
+&= \sum_{k \leq K} \sum_{i \leq N} M_{ik}\\ 
+&= \sum_{i \leq N}\sum_{k \leq K}M_{ik}\\\
+&= \sum_{i \leq N} 1\\
+&= N.
 \end{align}
+
+We now prove the claim.
+%
+\begin{align}
+&- \frac{1}{2N}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2 + \frac{1}{2}\\
+&= -\frac{1}{2N}\sum_{k \leq K}\left(2\sum_{i < j \leq N}M_{ik}M_{jk}x_i^\top x_j^\top + \sum_{i \leq N} M_{ik}^2 x_i^\top x_i\right) + \frac{1}{2}\\
+&= -\frac{1}{N}\sum_{k \leq K}\sum_{i < j \leq N}M_{ik}M_{jk}x_i^\top x_j^\top -\frac{1}{2N}\sum_{k \leq K} \sum_{i \leq N} M_{ik}^2 x_i^\top x_i + \frac{1}{2}\\
+&= -\frac{1}{N}\sum_{k \leq K}\sum_{i < j \leq N}M_{ik}M_{jk}x_i^\top x_j^\top -\frac{1}{2} + \frac{1}{2} = R(M, X)
+\end{align}
+%%
+%\begin{align}
+%R(M, X) &= -2\left(\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j\right)\\
+%&= -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j\\
+%&= -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j -\frac{1}{2N}\sum_{j < i \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j\\
+%&= -\frac{1}{2N}\sum_{i < j \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j-\frac{1}{2N}\sum_{j < i \leq N} \sum_{k \leq K} M_{ik}M_{jk}x_i^\top x_j+\\
+%& -\frac{1}{2N}\sum_{i} \sum_{k \leq K} M_{ik}M_{ik}x_i^\top x_i+\frac{1}{2N}\sum_{i} \sum_{k \leq K} M_{ik}M_{ik}x_i^\top x_i\\
+%&= -\frac{1}{2N}\sum_{k \leq K}\sum_{i, j \leq N}  M_{ik}M_{jk}x_i^\top x_j + \frac{1}{2N}\sum_{i} \sum_{k \leq K} M_{ik}M_{ik}x_i^\top x_i\\
+%&= - \frac{1}{2N}\sum_{k \leq K}\sum_{i, j \leq N} M_{ik}M_{jk} x_i^\top x_j + \frac{1}{2N}N.\\
+%&= - \frac{1}{2N}\sum_{k \leq K}\sum_{i, j \leq N} M_{ik}M_{jk} x_i^\top x_j + \frac{1}{2}.\\
+%&= - \frac{1}{2N}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2 + \frac{1}{2}.
+%\end{align}
 %
 \end{proof}
 
