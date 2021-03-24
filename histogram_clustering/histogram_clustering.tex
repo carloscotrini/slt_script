@@ -40,7 +40,7 @@ The ideas in this chapter extend easily to any setting where the objects
 to be clustered can be represented as such functions. This gives rise to the \emph{histogram clustering problem}.
 
 \begin{definition}
-Let $\mathfrak{X}$ be a set of \emph{objects} that are perceived only through a set $\mathcal{Y}$ of \emph{features}. Assume given a function $n : \mathfrak{X} \times \mathcal{Y} \to \mathbb{N}$ that counts $(x, y) \in \mathfrak{X} \times \mathcal{Y}$ the number $n(x,y)$ of times that feature $y$ has been observed for object $x$. The \emph{histogram} $\hat{p}\left(\cdot \mid x\right) : \mathcal{Y} \to [0, 1]$ of an object $x \in \mathfrak{X}$ is the probability mass function given by
+Let $\mathcal{X}$ be a set of \emph{objects} that are perceived only through a set $\mathcal{Y}$ of \emph{features}. Assume given a function $n : \mathcal{X} \times \mathcal{Y} \to \mathbb{N}$ that counts $(x, y) \in \mathcal{X} \times \mathcal{Y}$ the number $n(x,y)$ of times that feature $y$ has been observed for object $x$. The \emph{histogram} $\hat{p}\left(\cdot \mid x\right) : \mathcal{Y} \to [0, 1]$ of an object $x \in \mathcal{X}$ is the probability mass function given by
 %
 \begin{equation}
 \hat{p}\left(y \mid x\right) = \frac{n(x,y)}{\sum_{y \in \mathcal{Y}}n(x, y)}, \text{ for $y \in \mathcal{Y}$}.
@@ -65,20 +65,19 @@ Let $\mathcal{X}$ be the set of all images patches occurring in a given image an
 
 We define a cost function that is analogous to the $K$-means cost function
 from Chapter~\ref{ch:da}. This cost function is parameterized by a set $Q = \{q_1, \ldots, q_K\}$ of histograms that will act as ``centroids''. The cost function
-takes then as input a function $c \in \mathcal{C}$, the set $Q$, and an image $X$ partitioned
-into patches $\{x_1, \dots, x_N\}$. This function measures, for $i \leq N$, how much
-$\hat{p}\left(\cdot \mid x_i\right)$ diverges from $q_{c(i)}\left(\cdot\right)$. We choose the popular Kullback-Leibler divergence
+takes then as input a function $c \in \mathcal{C}$ and the set $Q$. This function measures, for $x \in \mathcal{X}$, how much
+$\hat{p}\left(\cdot \mid x\right)$ diverges from $q_{c(x)}\left(\cdot\right)$. We choose the popular Kullback-Leibler divergence
 to measure this:
 
 \begin{equation}
-D_{KL}\left[\hat{p}\left(\cdot \mid x_i\right) \mid q_k\left(\cdot\right)\right] = \sum_{y \in \{0, \ldots, 255\}} \hat{p}\left(y \mid x_i\right) \log \left(\frac{\hat{p}\left(y \mid x_i\right)}{q_k\left(y\right)}\right).
+D_{KL}\left[\hat{p}\left(\cdot \mid x\right) \mid q_k\left(\cdot\right)\right] = \sum_{y \in \{0, \ldots, 255\}} \hat{p}\left(y \mid x\right) \log \left(\frac{\hat{p}\left(y \mid x\right)}{q_k\left(y\right)}\right).
 \end{equation}
 
 Based on the $K$-means cost function from Chapter~\ref{ch:da}, we now propose the following cost function.
 
 \begin{definition}
 \begin{equation}
-R(c, Q, X) = \sum_{x \in \mathcal{X}} D_{KL}\left[\hat{p}\left(\cdot \mid x\right) \mid q_k\left(\cdot\right)\right].
+R(c, Q, \mathcal{X}) = \sum_{x \in \mathcal{X}} D_{KL}\left[\hat{p}\left(\cdot \mid x\right) \mid q_{c(x)}\left(\cdot\right)\right].
 \end{equation}
 \end{definition}
 
@@ -87,16 +86,16 @@ R(c, Q, X) = \sum_{x \in \mathcal{X}} D_{KL}\left[\hat{p}\left(\cdot \mid x\righ
 \subsection{Efficient computation of the Gibbs distribution}
 
 \begin{lemma}
-Any Gibbs distribution $p(\cdot \mid X)$ induced by $R$ and $X$ factorizes as follows
+Any Gibbs distribution $p(\cdot \mid \mathcal{X})$ induced by $R$ and $\mathcal{X}$ factorizes as follows
 %
 \begin{equation}
-p(c \mid Q, X) = \prod_{x \in X} \facprob{x}{c(x)}{Q}{X},
+p(c \mid Q, \mathcal{X}) = \prod_{x \in X} \facprob{x}{c(x)}{Q}{\mathcal{X}},
 \end{equation}
 %
 where
 %
 \begin{equation}
-\facprob{x}{k}{Q}{X} \propto \exp\left(-\frac{1}{T}D_{KL}\left[\hat{p}\left(\cdot \mid x\right) \mid q_{k}\left(\cdot \right)\right]\right), \qquad \text{for $k \leq K$}.
+\facprob{x}{k}{Q}{\mathcal{X}} \propto \exp\left(-\frac{1}{T}D_{KL}\left[\hat{p}\left(\cdot \mid x\right) \mid q_{k}\left(\cdot \right)\right]\right), \qquad \text{for $k \leq K$}.
 \end{equation}
 %
 \end{lemma}
@@ -115,7 +114,7 @@ The centroids that maximize the entropy of a Gibbs distribution can be computed 
 Show that the set $Q^*$ of centroids that maximize the entropy of $p(\cdot \mid Q, X)$ must satisfy the conditions:
 %
 \begin{equation}
-q^*_k(\cdot) = \frac{\sum_{x \in X}\facprob{x}{k}{Q^*}{X}\hat{p}\left(\cdot \mid x\right)}{\sum_{x \in X} \facprob{x}{k}{Q^*}{X}}, \quad \text{for $k \leq K$,}
+q^*_k(\cdot) = \frac{\sum_{x \in \mathcal{X}}\facprob{x}{k}{Q^*}{\mathcal{X}}\hat{p}\left(\cdot \mid x\right)}{\sum_{x \in \mathcal{X}} \facprob{x}{k}{Q^*}{\mathcal{X}}}, \quad \text{for $k \leq K$,}
 \end{equation}
 %
 \end{exercise}
@@ -144,13 +143,13 @@ Figure~\ref{fig:phase_transitions_hc} illustrates the behavior of the centroids 
 \While{$T > \epsilon$}
 \Repeat
 \State $Q_0 \gets Q$
-\State Compute $\facprob{x}{k}{Q_0}{X}$, for $x \in X$ and $k \leq K$
-\State $\displaystyle Q \gets \frac{\sum_{x \in X} \facprob{x}{k}{Q_0}{X} \hat{p}\left(\cdot \mid x\right)}{\sum_{x \in X} \facprob{x}{k}{Q_0}{X}}$, for $k \leq K$.
+\State Compute $\facprob{x}{k}{Q_0}{\mathcal{X}}$, for $x \in \mathcal{X}$ and $k \leq K$
+\State $\displaystyle Q \gets \frac{\sum_{x \in \mathcal{X}} \facprob{x}{k}{Q_0}{\mathcal{X}} \hat{p}\left(\cdot \mid x\right)}{\sum_{x \in \mathcal{X}} \facprob{x}{k}{Q_0}{\mathcal{X}}}$, for $k \leq K$.
 \Until{$\texttt{close}\left(Q, Q_0\right)$}
 \State Add a small amount of noise to each centroid in $Q$.
 \State $T \gets \texttt{reduce}(T)$
 \EndWhile
-\State \textbf{return} $Q$, $\{\facprob{x}{k}{Q}{X} \mid x \in X, k \leq K\}$
+\State \textbf{return} $Q$, $\{\facprob{x}{k}{Q}{\mathcal{X}} \mid x \in \mathcal{X}, k \leq K\}$
 \EndFunction
 \end{algorithmic}
 \caption{Histogram clustering via deterministic annealing}
@@ -226,4 +225,4 @@ Show that
 %
 \end{exercise}
 
-It's easy to show that the maximization problem solved by $\left(\hat{p}(x)\right)_{x \in \mathcal{X}}$. The minimization problem is equivalent to minimizing $R(c,Q, X)$ with respect to $c$ and $Q = \left\{q_k(\cdot) \mid k \leq K\right\}$, which is precisely what we do in this chapter. Hence, histogram clustering yields not only a clustering of histograms, but also a probabilistic model.
+It's easy to show that the maximization problem solved by $\hat{p}(\cdot)$. The minimization problem is equivalent to minimizing $R(c,Q, \mathcal{X})$ with respect to $c$ and $Q = \left\{q_k(\cdot) \mid k \leq K\right\}$, which is precisely what we do in this chapter. Hence, histogram clustering yields not only a clustering of histograms, but also a probabilistic model.
