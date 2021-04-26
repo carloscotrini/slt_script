@@ -18,14 +18,15 @@
 
 \section{Introduction}
 
-This chapter proposes an information-theoretic foundation for posterior agreeement, originally proposed by Joachim Buhmann~\cite{buhmann2010information} and studied by Alex Gronskiy as part of his doctoral thesis~\cite{gronskiy2018statistical}. 
+This chapter proposes an information-theoretic foundation for posterior agreeement, as a method for validating clustering algorithms, originally proposed by Joachim Buhmann~\cite{buhmann2010information} and studied by Alex Gronskiy as part of his doctoral thesis~\cite{gronskiy2018statistical}.
+ 
 Posterior agreement can be understood as a method for \emph{validating algorithms} that solve stochastic optimization problems of the form
 %
 $$\min_{c} \mathbb{E}_X\left[R(c, X)\right].$$
 % 
 Here, $R(c, X)$ is the result of evaluating a cost function on a candidate solution $c$ on an instance of the problem described by the random variable $X$. The expectation is computed with $X$'s distribution.
 
-In posterior agreement, we assume that an algorithm is a function that computes, from a given observation $X'$, a \emph{posterior distribution} $p(\cdot \mid X')$ over a finite space $\mathcal{C}$ of feasible solutions. Every algorithm can be converted into such an algorithm, even if it is deterministic. In this case, the posterior distribution is just a distribution that assigns probability mass one to the algorithm's output.
+In posterior agreement, we assume that an algorithm is a function that computes, from a given observation $X'$, a \emph{posterior distribution} $p(\cdot \mid X')$ over a finite space $\mathcal{C}$ of possible solutions. Every algorithm can be converted into such an algorithm, even if it is deterministic. In this case, the posterior distribution is just a distribution that assigns probability mass one to the algorithm's output.
 
 Posterior agreement assesses the performance of an algorithm by computing the \emph{expected log posterior agreement}:
 %
@@ -47,9 +48,78 @@ The expected log posterior agreement requires the joint probability distribution
 
 Moreover, the empirical log posterior agreement is intended to be a metric to compare different algorithms. Therefore, it is often sufficient to measure $\kappa\left(X', X''\right).$
 
-We show how posterior agreement can compare, for example, Prim's, Kruskal's, and the reverse-delete algorithm for computing spanning trees for graphs whose edge weights are defined by random variables, as in the example above. Posterior agreement can also compare among different cost functions and hyperparameter values, when training machine learning models.
+%We show how posterior agreement can compare, for example, Prim's, Kruskal's, and the reverse-delete algorithm for computing spanning trees for graphs whose edge weights are defined by random variables, as in the example above. Posterior agreement can also compare among different cost functions and hyperparameter values, when training machine learning models.
 
 Therefore, posterior agreement advocates that, in the context of stochastic optimization, \emph{algorithms should aim for maximizing the posterior agreement kernel, given two instances of the problem}, rather than minimizing the cost function for either instance or an aggregate of these instances.
+
+The proofs given in this chapter works for algorithms that satisfy the following \emph{asymptotic equipartition property}. As $n \to \infty$, $\log \left(\left|\mathcal{C}\right|\kappa(X', X'')\right)$ converges in probability to
+%
+\begin{equation}
+\mathbb{E}_{X', X''}\left[\log \left(\left|\mathcal{C}\right|\kappa(X', X'')\right)\right].
+\end{equation}
+%
+Such property is satisfied by many of the algorithms studied in this script, like deterministic annealing and histogram clustering. Furthermore, if an algorithm produces distributions that can be sufficiently well approximated by a mean-field approximation, then it is possible to demonstrate that they also fulfil this asymptotic equipartition property.
+
+\begin{exercise}
+Show that deterministic annealing (DA) satisfies the asymptotic equipartition property.
+\end{exercise}
+
+\begin{proof}
+Recall that the distribution $p(\cdot \mid \theta, X')$ computed by DA on a given sample of points $X' = \{x'_1, \ldots, x_n'\}$ factorizes as follows:
+%
+\begin{equation}
+p(c \mid \theta, \theta, X') = \prod_{i \leq n} p(c(i) \mid \theta, x'_i),
+\end{equation}
+%
+where
+%
+\begin{equation}
+p(k \mid \theta, x'_i) \propto \exp\left(-\frac{1}{T}\left\|x_i - \theta_k\right\|^2\right).
+\end{equation}
+%
+From Exercise~\ref{ex:pa_factorizes_da}, we know that
+%
+\begin{equation}
+\kappa\left(X', X''\right) = \prod_{i \leq n} \sum_{k \leq K} p(k \mid \theta, x'_i)p(k \mid \theta, x''_i).
+\end{equation}
+%
+Therefore,
+%
+\begin{equation}
+\log \left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right) = \log \left|\mathcal{C}\right| + \sum_{i \leq n}\log \sum_{k \leq K} p(k \mid \theta, x'_i)p(k \mid \theta, x''_i).
+\end{equation}
+%
+Now, if we take the limit as $n \to \infty$ of both sides, and apply the law of large numbers, we have that, as $n \to \infty$, $\log \left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)$ converges in probability to
+%
+\begin{equation}
+\log \left|\mathcal{C}\right| + n \mathbb{E}_{x', x''}\left[\log \sum_{k \leq K} p(k \mid \theta, x')p(k \mid \theta, x'')\right],
+\label{eq:result_conv_prob_pa}
+\end{equation}
+%
+Finally, observe that
+%
+\begin{align}
+\mathbb{E}_{X', X''}\left[\log \kappa\left(X', X''\right)\right]
+&= \mathbb{E}_{X', X''}\left[\sum_{i \leq n}\log \sum_{k \leq K} p(k \mid \theta, x'_i)p(k \mid \theta, x''_i)\right]\\
+&= \sum_{i \leq n}\mathbb{E}_{X', X''}\left[\log \sum_{k \leq K} p(k \mid \theta, x'_i)p(k \mid \theta, x''_i)\right]\\
+&= \sum_{i \leq n}\mathbb{E}_{x'_i, x''_i}\left[\log \sum_{k \leq K} p(k \mid \theta, x'_i)p(k \mid \theta, x''_i)\right]\\
+&= n\mathbb{E}_{x', x''}\left[\log \sum_{k \leq K} p(k \mid \theta, x')p(k \mid \theta, x'')\right].\\
+\end{align}
+%
+Substituting this in Equation~\ref{eq:result_conv_prob_pa} yields the desired result.
+\end{proof}
+
+\begin{corollary}
+Consider an algorithm that, when given as input a sample $X'$, outputs a distribution $p(\cdot \mid X')$. Assume that this distribution admits a mean-field approximation such that
+%
+\begin{equation}
+p(c \mid X') \approx \prod_{i \leq n} q(c_i \mid x_i').
+\end{equation}
+%
+Then this algorithm fulfils the asymptotic equipartition property.
+\end{corollary}
+
+The proof is analogous to the one above.
 
 \todo{Organization of these notes.}
 
@@ -70,35 +140,54 @@ Can we estimate from this information what Wednesday's graph's minimum spanning 
 The city graph can be understood as a random variable $X$. More precisely, it is a collection of 6 random variables, each of them defining an edge's weight on a particular day. Hence, the weight $R(c, X)$ of a tree $c$ in $X$, which is the sum of the edge weights in $c$, is also a random variable. We can then formulate the problem of the minimum spanning tree for our case as the following stochastic optimization problem:
 %
 \begin{equation}
-\arg \min_{c \in \mathcal{C}} \mathbb{E}\left[R(c, X)\right],
+\arg \min_{c \in \mathcal{C}} \mathbb{E}_X\left[R(c, X)\right],
 \label{eq:stoch_min_span_tree}
 \end{equation}
 %
 where $\mathcal{C}$ denotes all spanning trees of the city graph.
 
-In practice, the main challenge in this type of optimization problems is that we do not know $X$'s probability distribution. One natural way to go around this issue and approximately solve Problem~\ref{eq:stoch_min_span_tree} is to substitute $\mathbb{E}\left[R(c, X)\right]$ with an \emph{empirical estimate}:
+This type of optimization problems appear very often in combinatorial optimization and statistical learning. One challenge in this type of optimization problems is that we do not know $X$'s probability distribution.
+One natural way to go around this issue and approximately solve Problem~\ref{eq:stoch_min_span_tree} is to substitute $\mathbb{E}\left[R(c, X)\right]$ with an \emph{empirical estimate}:
 %
-$$\mathbb{E}\left[R(c, X)\right] \approx \sum_{i \leq N} R(c, X_i),$$
+$$\mathbb{E}\left[R(c, X)\right] \approx \frac{1}{N}\sum_{i \leq N} R(c, X_i),$$
 %
-where $\left\{X_1, \ldots, X_n\right\}$ is a sample of observed values of $X$. When $n$ is sufficiently large and each $X_i$ is independent from the others, then by the law of large numbers, this becomes a good approximation of $\mathbb{E}\left[R(c, X)\right]$. We call the \emph{empirical risk minimizer} the solution of the problem:
+where $\left\{X_1, \ldots, X_n\right\}$ is a sample of observed values of $X$.
+
+When $n$ is sufficiently large and each $X_i$ is independent from the others, then by the law of large numbers, this becomes a good approximation of $\mathbb{E}\left[R(c, X)\right]$. We call the \emph{empirical risk minimizer} the solution of the problem:
 %
 \begin{equation}
 \arg \min_{c \in \mathcal{C}} \sum_{i \leq n}\left[R(c, X_i)\right],
 \label{eq:erm}
 \end{equation}
 
-We present later scenarios where the empirical risk minimizer is not the best solution we can obtain, especially when we have only very few observations\carlos{Demonstrate this}. One example is the problem of computing the minimum of an array $X = \left(X_1, \ldots, X_n\right)$ of random variables. Given just two observations $X^1$ and $X^2$, approximating $\min_i \mathbb{E}X_i$ with $\min_i X^1_i + X^2_i$ is not the best we can do.
+Unfortunately, the empirical risk minimizer does not always minimize the expected risk, especially, when the sample size $n$ is small, as we saw in the random array problem in Section~\ref{sec:random_array}. The empirical risk minimizer can overfit the sample and, therefore, fail to generalize to other samples.
+
+One can prevent such overfitting with techniques like regularization. This makes the solutions less sensitive to the noise in the sample. However, such techniques may lead to solutions that are too insensitive to the signal in the sample, failing to minimize the expected cost as well.
+
+Solving Problem~\ref{eq:stoch_min_span_tree} requires designing algorithms that strike a balance between two extremes. On one hand, algorithms may \emph{overfit} and produce solutions that are too sensitive to the noise in the sample. On the other hand, algorithms may \emph{underfit} and produce solutions that are too insensitive to the signal in the sample. These two extremes are illustrated in Figure\ref{fig:clustering}\todo{} for the problem of clustering. In the overfitting extreme, an algorithm may just make each point in the sample its own cluster (and this solution would actually minimize the expected cost). In the undefitting extreme, an algorithm may just put all points in the sample into one single cluster. The overfitting algorithm minimizes the cost, but is extremely sensitive to noise in the data, whereas the underfitting algorithm is very robust, but fails to minimize the expected cost. Can we find a common ground between these two?
+
+%We present later scenarios where the empirical risk minimizer is not the best solution we can obtain, especially when we have only very few observations. One example, presented in Section~\ref{sec:random_array} is the problem of computing the minimum of an array $X = \left(X_1, \ldots, X_n\right)$ of random variables. Given just two observations $X^1$ and $X^2$, estimating $\min_i \mathbb{E}_X[X_i]$ with the empirical risk minimizer is not the best we can do. We also showed in that section, how combining maximum entropy and posterior agreement yielded a better estimator.
+
+\subsection*{Posterior agreement}
+
+To find a solution to this apparent dilemma, posterior agreement has been proposed. This is a metric to evaluate how well an algorithm proposes solutions that minimize the expected cost and, at the same time, that are robust to the noise in the data.
+
+Why is posterior agreement a good metric for validating algorithms? Why should we use it instead of other more standard criteria like cross-validation or the minimum description length? These notes argue that posterior agreement is effective, \emph{because it quantifies the amount of information that algorithms extract from phenomena}.
 %Moreover, there are also scenarios where it is not possible to get a sufficiently large sample of observed values to estimate $X$'s distribution. \carlos{Give examples of such scenarios}
 
 \section{Overview}
 %
 %For example, in the context of computing the city graph's minimum spanning tree, the phenomenon is the probability distribution that governs the edge weights that we observe on a particular day. An observation $X'$ defines the actual edge weights of a particular day. The signal we want to retrieve is a distribution $p(\cdot)$ over the spanning trees. For a spanning tree $c$, $p(c)$ measures how much we believe that minimizes $\mathbb{E}\left[R(c, X)\right]$.
 
-Posterior agreement originates from formalizing an algorithm $\mathcal{A}$ \emph{as a communication channel} by which a sender and a receiver communicate outputs from $\mathcal{A}$. The robustness of an algorithm can be measured by the \emph{capacity} of that communication channel, where the capacity defines the maximum number of distinguishable messages that can be communicated through the channel.
+Posterior agreement originates from formalizing an algorithm $\mathcal{A}$ \emph{as a communication channel} by which a sender and a receiver communicate outputs from $\mathcal{A}$. The main argument justifying posterior agreement states the following. The amount of information conveyed by an algorithm can be measured by the \emph{capacity} of that communication channel, where the capacity, as we explain later, defines the maximum number of distinguishable messages that can be communicated through the channel.
+
+This section gives an informal overview of this main argument. The later sections formalize this argument. We start with a recap of Shannon's channel coding theory and then show how to apply it to represent and analyze algorithms as communication channels.
 
 \subsubsection*{Shannon's channel coding theorem}
 
-Consider a channel by which a sender can transmit bits to a receiver. Assume that the channel is noisy in the sense that a bit can be flipped during transmission with probability $\epsilon < 0.5$. The sender and the receiver agree on transmitting only bitstrings of length $n$. We call these bitstrings \emph{codewords}. Observe that if $\epsilon = 0$, then the sender can reliably communicate $2^n$ different messages to the receiver, by agreeing in advance with the receiver on a way to encode each message as one codeword of length $n$. This correspondence is called a \emph{code}. 
+Consider a channel by which a sender can transmit bits to a receiver. Assume that the channel is noisy in the sense that a bit can be flipped during transmission with probability $\epsilon < 0.5$. The sender and the receiver agree on transmitting only bitstrings of length $n$. We call these bitstrings \emph{codewords}. 
+
+Observe that if $\epsilon = 0$, then the sender can reliably communicate $2^n$ different messages to the receiver, by agreeing in advance with the receiver on a way to encode each message as one codeword of length $n$. This correspondence is called a \emph{code} and will be formally defined in Section~\ref{sec:shannon_theorem}.
 
 In practice, $\epsilon > 0$. Therefore, the sender and the receiver need to agree on a code that is robust to the channel's noise. We now show two examples of codes:
 
@@ -107,25 +196,17 @@ In practice, $\epsilon > 0$. Therefore, the sender and the receiver need to agre
 \item They agree on sending $2^n$ messages, each encoded with a unique codeword of length $n$. With high probability, some of the bits will be flipped during transmission and the receiver will fail to identify the message that the sender tried to communicate.
 \end{itemize}
 
-Observe that these two codes represent two extremes, as $n \to \infty$. On one hand, the first code communicates only 2 messages, but with high probability of success. On the other hand, the second code communicates $2^n$ messages, but with low probability of success. One can also imagine other codes that strike a balance between the number of messages to be communicated and the success probability.
+Observe that these two codes represent two extremes, as $n \to \infty$. On one hand, the first code is robust: it communicates only 2 messages, but with high probability of success. On the other hand, the second code communicates the maximum number of possible messages, but with low probability of success, as it is very sensitive to the channel's noise. One can also imagine other codes that strike a balance between the number of messages to be communicated and the success probability. Observe how these two extremes correspond to the two extremes of overfitting and underfitting. 
 
 Shannon's coding theorem answers the following question. \emph{What is the code that maximizes the number of messages that the sender can communicate to the receiver, while attaining a probability of success close to 1, as $n \to \infty$?} When $\epsilon > 0$, this number is clearly below $2^n$, but since $\epsilon < 0.5$, this number must be positive. Shannon shows that this number is $2^{nc}$, where $c$ is \emph{the channel's capacity}, a quantity that is defined by the channel. Therefore, channels with higher capacity allow the communication of more messages at the same codeword length.
 
 \subsubsection*{Posterior agreement}
 
-Posterior agreement originates from modeling an algorithm $\mathcal{A}$ as a communication channel $C_{\mathcal{A}}$, where a sender communicates outputs from $\mathcal{A}$ to a receiver. We argue that the capacity of $C_{\mathcal{A}}$ is defined by $\mathcal{A}$'s robustness to noise in the input. That is, if $\mathcal{A}$ is robust to noise, then it is possible to communicate many more messages through $C_{\mathcal{A}}$ than when $\mathcal{A}$ is sensitive to noise.
+Posterior agreement originates by adapting Shannon's coding theorem to the context of algorithms. This requires a way of modeling an algorithm $\mathcal{A}$ as a communication channel $C_{\mathcal{A}}$, where a sender communicates outputs from $\mathcal{A}$ to a receiver. We do this in these notes and argue that the capacity of $C_{\mathcal{A}}$ is defined by $\mathcal{A}$'s ability to compute robust solutions that minimize the expected cost. That is, if $\mathcal{A}$ is a robust minimizer of the expected cost, then it is possible to communicate many more messages through $C_{\mathcal{A}}$ than when $\mathcal{A}$ is sensitive to noise or when $\mathcal{A}$ is a poor minimizer of the expected cost.
 
-We give an overview of this argument next. A rigorous argument is given in Section~\ref{sec:comm_protocol}.
+We give an informal overview of this argument next. A rigorous argument is given in Section~\ref{sec:comm_protocol}.
 
 We assume given an \emph{instance space} $\mathcal{X}$, comprising all possible observations, and a \emph{solution space} $\mathcal{C}$, comprising all possible solutions. A phenomenon is then a probability distribution over $\mathcal{X}$. We assume that algorithms intending to solve Problem~\ref{eq:stoch_min_span_tree} receive in the input an observation $X'$ and output a distribution $p(\cdot \mid X')$ over $\mathcal{C}$.
-
-\begin{example} 
-In the minimum spanning tree problem, a codeword is a spanning tree, a phenomenon is a distribution governing a graph's edge weights, and an observation is a graph whose edge weights are drawn from a fixed distribution. 
-\end{example}
-
-\begin{example}
-In the centroid-based clustering problem, a codeword is a cluster assignment function and a set of centroids, an observation is a set of points to be clustered, and a phenomenon is a distribution where the points are drawn from.
-\end{example}
 
 For our analysis, we assume that each instance space contains all observations of a given ``size'' $n \in \mathbb{N}$. This size $n$ is a notion that measures the observations' and phenomena's complexity. For example, in the minimum spanning tree problem, an instance space contains only all weighted graphs with a fixed number $n$ of vertices.
 
@@ -133,13 +214,14 @@ For an algorithm $\mathcal{A}$, we define a communication channel $C_{\mathcal{A
 
 We now emphasize the key insight of this modeling. If $\mathcal{A}$ is robust to the fluctuations in $X'$, then there should not be much difference between $p(\cdot \mid X')$ and $p(\cdot \mid X'')$. In contrast, if $\mathcal{A}$ is very sensitive to the fluctuations in $X'$, then $p(\cdot \mid X')$ and $p(\cdot \mid X'')$ may be very different. Hence, $\mathcal{A}$'s robustness to noise defines how many different ``messages'' can we send through this channel. We conclude then that $\mathcal{A}$'s robustness is measured by the capacity of this channel $C_{\mathcal{A}}$. This capacity, as we show in Section~\ref{sec:comm_protocol}, can be estimated by the expected log posterior agreement. For this reason, we argue that algorithms intended to solve Problem~\ref{eq:stoch_min_span_tree} shall be measured by their expected log posterior agreement.
 
-Observe the following analogies to Shannon's coding theory. Channels have a capacity that define the maximum number of distinguishable messages that can be communicated. Channels with higher capacity are preferable, as they allow more different messages to be communicated. Analogously, we argue that algorithms can be modeled as channels and, therefore, have a capacity, which we later show to be the expected log posterior agreement. Hence, we argue that algorithms with higher expected log posterior agreement are preferable, as they allow more different messages to be communicated.
+%Observe the following analogies to Shannon's coding theory. Channels have a capacity that define the maximum number of distinguishable messages that can be communicated. Channels with higher capacity are preferable, as they allow more different messages to be communicated. Analogously, we argue that algorithms can be modeled as channels and, therefore, have a capacity, which we later show to be the expected log posterior agreement. Hence, we argue that algorithms with higher expected log posterior agreement are preferable, as they allow more different messages to be communicated.
 
 \subsubsection*{Protocol overview}
 
-The protocol describes a code by which a sender can communicate messages to a receiver. Let $\mathcal{A}$ be an algorithm intending to solve Problem~\ref{eq:stoch_min_span_tree}. In our case, a message is a phenomenon and a codeword is the output $p(\cdot \mid X')$ of $\mathcal{A}$ when given an observation $X'$ from a phenomenon as input. Analogous to Shannon's coding theorem, the sender and the receiver aim to maximize the number of different messages that the sender can communicate, while ensuring that the receiver's probability of success goes to 1 as $n \to \infty$.
+We now introduce a protocol describing a code by which a sender can communicate messages to a receiver. Let $\mathcal{A}$ be an algorithm intending to solve Problem~\ref{eq:stoch_min_span_tree}. In our case, a message is a phenomenon and a codeword is the output $p(\cdot \mid X')$ of $\mathcal{A}$ when given an observation $X'$ from a phenomenon as input. 
+%Analogous to Shannon's coding theorem, the sender and the receiver aim to maximize the number of different messages that the sender can communicate, while ensuring that the receiver's probability of success goes to 1 as $n \to \infty$.
 
-Figure~\ref{fig:overview_protocol} gives an overview of the protocol. The sender must describe a phenomenon $q$ to a receiver through a noisy channel. The sender makes an observation $X'$ from $q$, uses $\mathcal{A}$ to compute $p(\cdot \mid X')$, and sends through the channel to the receiver. The channel is noisy and we represent its noise by replacing $p(\cdot \mid X')$ with $p(\cdot \mid X'')$, where $X''$ is another observation from $q$. The receiver succeeds if he is able, using $p(\cdot \mid X'')$, to distinguish $X'$ from observations from other different phenomena.
+Figure~\ref{fig:overview_protocol} illustrates the idea behind the protocol. The sender must describe a phenomenon $q$ to a receiver through a noisy channel. The sender makes an observation $X'$ from $q$, uses $\mathcal{A}$ to compute $p(\cdot \mid X')$, and sends through the channel to the receiver. The channel is noisy and we represent its noise by replacing $p(\cdot \mid X')$ with $p(\cdot \mid X'')$, where $X''$ is another observation from $q$. The receiver succeeds if he is able, using $p(\cdot \mid X'')$, to identify $q$. Observe how this protocol measures the informativeness of an algorithm by the ability of the receiver to identify phenomena, given the algorithm's output.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{\dir/overview_protocol.png}
@@ -151,7 +233,7 @@ We remark that this protocol is just a thought experiment. The protocol is compu
 
 \subsubsection*{Protocol example}
 
-We now give a more precise overview by showing how posterior agreement works with a simple example. Let $\mathcal{A}_1$ and $\mathcal{A}_2$ be two algorithms that estimate the mean of a univariate distribution, given only a sample from that distribution. For example, $\mathcal{A}_1$ fits a Gaussian to the sample via maximum-likelihood estimation whereas $\mathcal{A}_2$ does the same, but only using only the sample maximum and minimum. Suppose that both algorithms output Gaussian distributions that indicate where they believe that the mean is. 
+We now give a more precise overview by showing how posterior agreement works with a simple example. Let $\mathcal{A}_1$ and $\mathcal{A}_2$ be two algorithms that estimate the mean of a univariate distribution, given only a sample from that distribution. For example, $\mathcal{A}_1$ fits a Gaussian to the sample via maximum-likelihood estimation whereas $\mathcal{A}_2$ does the same, but only using only the maximum and the minimum of that sample. Suppose that both algorithms output Gaussian distributions that indicate where they believe that the mean is. 
 
 The protocol works as follows. Fix $n \in \mathbb{N}$, which denote the size of all the observations in the instance space. In our case, $n$ denotes the sample size. The sender and the receiver are given the algorithm under evaluation $\mathcal{A}_i$ and then they choose the size $m_n \in \mathbb{N}$ of the set of messages that they the sender will attempt to communicate. Recall that they want to choose $m_n$ as large as possible. However, a large $m_n$ increases the probability $P_n$ that the receiver fails to recognize the message from the codeword transmitted by the sender. We later see that the best choice for $m_n$ is defined by $\mathcal{A}_i$. 
 
@@ -159,9 +241,9 @@ The protocol proceeds then as follows:
 
 \begin{enumerate}
 \item\label{step:sample_observations} (Figure~\ref{fig:agree_on_code}) The sender and the receiver agree on a set of $m := m_n$ phenomena, which we represent with the probability distributions $q_1, q_2, \ldots, q_m$.
-\item (Figure~\ref{fig:agree_on_code}) The sender and the receiver together make one observation $X'_i$ of each phenomenon $q_i$, with $i \leq m$. In this case, an observation is a sample of points from $q_i$. Afterwards, they use $\mathcal{A}_i$ to compute a distribution $p(\cdot \mid X')$ for each observation $X'$.
+\item (Figure~\ref{fig:agree_on_code}) The sender and the receiver together make one observation $X'_i$ of each phenomenon $q_i$, with $i \leq m$. In this case, an observation is a sample of points from $q_i$. Afterwards, they use $\mathcal{A}_j$, with $j \in \{1, 2\}$, to compute a distribution $p(\cdot \mid X')$ for each observation $X'$.
 \item\label{step:choose} (Figure~\ref{fig:noisy_channel}) An observation $X'$ is chosen out of these $m$ observations uniformly at random. $X'$ is given to the sender, but kept secret from the receiver.
-\item (Figure~\ref{fig:substitution_maneuver}) The sender sends $p(\cdot \mid X')$ to the receiver through a \emph{noisy communication channel}. This channel replaces $p(\cdot \mid X')$ with $p(\cdot \mid X'')$, where $X''$ is a fresh new observation from the same phenomenon where $X'$ comes from.
+\item (Figure~\ref{fig:substitution_maneuver}) The sender sends $p(\cdot \mid X')$ to the receiver through the communication channel $C_{\mathcal{A}_j}$, defined by $\mathcal{A}_j$. This channel replaces $p(\cdot \mid X')$ with $p(\cdot \mid X'')$, where $X''$ is a fresh new observation from the same phenomenon where $X'$ comes from.
 \item (Figure~\ref{fig:guessing}) The receiver gets $p(\cdot \mid X'')$ and must now guess which observation in $\{X'_1, \ldots, X'_m\}$ the sender chose in Step~\ref{step:choose}. For this, the receiver uses the natural approach of guessing the observation $\hat{X}$ for which $p(\cdot \mid \hat{X})$ overlaps the most with $p(\cdot \mid X'')$. In other words, the receiver guesses the observation $\hat{X}$ that fulfills:
 %
 $$\kappa\left(\hat{X}, X'\right) \geq \kappa\left(Y, X'\right), \text{ for all Y.}$$
@@ -202,7 +284,7 @@ $$\exp\left(- \mathbb{E}_{X', X''} \left[\log \left(\left|\mathcal{C}\right|\kap
 %
 where $\epsilon > 0$ is arbitrary, $\mathcal{C}$ is the solution space, and $m$ is the number of observations defined in Step~\ref{step:sample_observations}.
 
-Assume now that $\log \left|\mathcal{C}\right| = \Omega(n)$. This is a reasonable assumption, as for many interesting problems, $\mathcal{C}$ grows exponentially on $n$. Observe that the algorithm can only influence $\kappa\left(X', X''\right)$. If $\epsilon$ is sufficiently small and the algorithm ensures that 
+Assume now that $\log \left|\mathcal{C}\right| = \Omega(n)$. This is a reasonable assumption, as for many interesting problems, $\mathcal{C}$ grows exponentially in $n$. Observe that the algorithm can only influence $\kappa\left(X', X''\right)$. If $\epsilon$ is sufficiently small and the algorithm ensures that 
 %
 $$\mathbb{E}_{X', X''} \log\left(\left|\mathcal{C}\right| \kappa\left(X', X''\right)\right) - \log m = \Omega(n),$$ 
 %
@@ -216,6 +298,7 @@ then the receiver's failure probability becomes $0$ as $n \to \infty$. The algor
 %\end{figure}
 
 \section{Shannon's channel coding theorem}
+\label{sec:shannon_theorem}
 
 To properly formulate and analyze the communication protocol above, we build upon Shannon's channel coding theorem. This theorem measures how much information we can optimally send through a communication channel. This section is mainly based on Chapter 7 from Thomas and Cover~\cite{infotheory}.
 
@@ -297,8 +380,6 @@ Consider now the noisy typewriter with $\epsilon = 0.5$. How many bits can we re
 \subsection{Codes}
 
 \subsubsection*{Intuition on codes and rates}
-
-\carlos{Why aren't we taking into account loss bits or duplicated bits? This can happen during transmission.}
 
 Consider the noisy binary channel. By sending several bits in a specific pattern to the channel, one can come up with sophisticated ways to transmit complex information through the channel, like images or spreadsheets. We illustrate this by showing how to use the binary channel to send letters in $\{\texttt{a}, \texttt{b}, \ldots, \texttt{z}\}$. The sender and the receiver must first agree on a \emph{code} for those letters. One such code, which we call \emph{na\"ive code}, encodes the letter $\texttt{a}$ as the \emph{codeword} \texttt{00000}, \texttt{b} as \texttt{00001}, and so on. That is, the codeword for the $i$-th alphabet letter is number $i$ in base 2, written as a bit string of length 5. In a similar fashion, we can conceive codes for communicating more complex data like images and spreadsheets.
 
@@ -566,7 +647,7 @@ For our statements to hold, we make the following assumptions.
 
 Let $\mathcal{A}$ be an algorithm intended for solving Problem~\ref{eq:stoch_min_span_tree}. Posterior agreement originates from a communication protocol between a sender and a receiver. The sender must communicate, using $\mathcal{A}$'s outputs, the nature of a phenomenon to the receiver. The receiver must be able, using the information sent from the sender, to identify the phenomenon. The communication from the sender to the receiver is done through a noisy channel, whose noise is defined by $\mathcal{A}$ and the phenomenon.
 
-\paragraph{Messages} Fix $n \in \mathbb{N}$. Present the instance space $\mathcal{X}$ to the sender and the receiver. Then agree draw at random a set $\mathcal{F} \subseteq \mathfrak{P}$ of $m$ phenomena and, for each $p \in \mathcal{F}$, draw an observation $X'$ of size $n$. Let $\mathcal{M} = \{X'_1, \ldots, X'_m\}$. Agreeing on $\mathcal{F}$ is often not possible in practice, so we explain in the empirical variant how to deal with this. This $\mathcal{M}$ constitutes the set of possible messages that the sender may try to communicate to the receiver.
+\paragraph{Messages} Fix $n \in \mathbb{N}$. Present the instance space $\mathcal{X}$ to the sender and the receiver. Then agree draw at random a set $\mathcal{F} \subseteq \mathfrak{P}$ of $m$ phenomena and, for each $p_i \in \mathcal{F}$, draw an observation $X'_i$ of size $n$. Let $\mathcal{M} = \{X'_1, \ldots, X'_m\}$. Agreeing on $\mathcal{F}$ is often not possible in practice, so we explain in the empirical variant how to deal with this. This $\mathcal{M}$ constitutes the set of possible messages that the sender may try to communicate to the receiver.
 
 For the moment, we leave the value of $m$ undefined. We leave for later to figure out what is the maximum value of $m$ that we can use. The choice of $m$ must still ensure that the probability of a communication error goes to 0, as $n \to \infty$.
 
@@ -574,9 +655,9 @@ For the moment, we leave the value of $m$ undefined. We leave for later to figur
 
 \begin{itemize}
 \item $\mathit{Enc}_{\mathcal{A}}$ encodes $X' \in \mathcal{M}$ as the codeword $p(\cdot \mid X')$.
-\item $\mathit{Dec}_{\mathcal{A}}$ decodes a probability distribution $p(\cdot \mid Y)$ over $\mathcal{C}$ as any $\hat{X} \in \mathcal{M}$ such that $k\left(Y, \hat{X}\right) \geq k\left(Y, X\right)$, for all $X \in \mathcal{M}$. Here,
+\item $\mathit{Dec}_{\mathcal{A}}$ decodes a probability distribution $p(\cdot \mid Y)$ over $\mathcal{C}$ as any $\hat{X} \in \mathcal{M}$ such that $\kappa\left(Y, \hat{X}\right) \geq \kappa\left(Y, X\right)$, for all $X \in \mathcal{M}$. Here,
 %
-$$k\left(Y, X'\right) := \sum_c p(c \mid Y)p(c \mid X').$$
+$$\kappa\left(Y, X'\right) := \sum_c p(c \mid Y)p(c \mid X').$$
 %
 \end{itemize}
 
@@ -590,10 +671,10 @@ Observe how the algorithm and the phenomenon define the channel's noise. Hence, 
 
 The capacity of the channel built above cannot be computed, as we often only have access to a set of observations and not to the phenomena behind them. This means that we cannot compute the set $\mathcal{M}$ of messages, as described in the ideal variant. For this reason, we use an empirical variant, where we assume that we are given at least two observations $X'$ and $X''$ of a same phenomenon.
 
-\paragraph{Messages} (Figure~\ref{fig:agree_on_trans}) We create a set of messages by producing \emph{transformed copies} of $X'$. We take a set $\mathbb{T}$ of transformations, where each transformation transforms instances into instances. Afterwards, we draw $m$ transformations  $\tau_1, \tau_2, \ldots, \tau_m$ from $\mathbb{T}$ uniformly at random. In this way, we can create a set $\mathcal{M} = \left\{\tau_1 \circ X', \tau_2 \circ X', \ldots, \tau_m \circ X'\right\}$ of messages that are analogous to the set of messages that we created in the ideal variant. We impose the following requirement on $\mathbb{T}$ so that $\mathcal{M}$ looks like the set $\mathcal{M}$ that we would obtain in the ideal variant.
+\paragraph{Messages} (Figure~\ref{fig:agree_on_trans}) We create a set of messages by producing \emph{transformed copies} of $X'$. We take a set $\mathbb{T}$ of transformations, where each transformation transforms instances into instances. Afterwards, we draw $m$ transformations  $\tau_1, \tau_2, \ldots, \tau_m$ from $\mathbb{T}$ uniformly at random. In this way, we can create a set $\mathcal{M} = \left\{\tau_1 \circ X', \tau_2 \circ X', \ldots, \tau_m \circ X'\right\}$ of messages that are analogous to the set of messages that we created in the ideal variant. We impose the following requirements on $\mathbb{T}$ so that $\mathcal{M}$ looks like the set $\mathcal{M}$ that we would obtain in the ideal variant.
 
 \begin{itemize}
-\item $\sum_{\tau} p(c \mid \tau \circ X') \in \left[\frac{\left|\mathbb{T}\right|}{\left|\mathcal{C}\right|}(1 - \rho), \frac{\left|\mathbb{T}\right|}{\left|\mathcal{C}\right|}(1 + \rho)\right]$, for some small $\rho > 0$. The reason for this assumption is that we we do not want the probability mass of all these codewords to be concentrated in a narrow subset of $\mathcal{C}$, as this reduces the number of different messages that the sender can communicate to the receiver. This can be ensured that, for each $c \in \mathcal{C}$, the total probability mass $c$ gets is $\sum_{\tau} p(c \mid \tau \circ X') \approx \frac{\left|\mathbb{T}\right|}{\left|\mathcal{C}\right|}$.
+\item $\sum_{\tau} p(c \mid \tau \circ X') \in \left[\frac{\left|\mathbb{T}\right|}{\left|\mathcal{C}\right|}(1 - \rho), \frac{\left|\mathbb{T}\right|}{\left|\mathcal{C}\right|}(1 + \rho)\right]$, for some small $\rho > 0$. The reason for this assumption is that we we do not want the probability mass of all these codewords to be concentrated in a narrow subset of $\mathcal{C}$, as this reduces the number of different messages that the sender can communicate to the receiver. This ensures that, for each $c \in \mathcal{C}$, the total probability mass $c$ gets is $\sum_{\tau} p(c \mid \tau \circ X') \approx \frac{\left|\mathbb{T}\right|}{\left|\mathcal{C}\right|}$.
 \item The transformations do not alter an instance's randomness. 
 %\item For any $\tau_1, \tau_2 \in \mathbb{T}$, $\left|p(\cdot \mid \tau_1 \circ X') - p(\cdot \mid \tau_2 \circ X'')\right| > 0$. That is, different transformations should induce different codewords.
 \end{itemize}
@@ -606,7 +687,7 @@ Observe that such a set of transformations does not necessarily always exist. Fo
 \label{fig:agree_on_trans}
 \end{figure}
 
-\paragraph{Code} (Figure~\ref{fig:emp_agree_on_code}) The encoding and decoding functions are the analogous of the ideal variant. The codeword of a message $\tau \in \mathcal{M}$ is $p(\cdot \mid \tau \circ X')$. When given a codeword $p(\cdot \mid Y)$, the decoding function outputs the message $\tau$ for which $k\left(Y, \tau \circ X'\right) \geq k\left(Y, \sigma \circ X'\right)$, for every $\sigma \in \mathcal{M}$.
+\paragraph{Code} (Figure~\ref{fig:emp_agree_on_code}) The encoding and decoding functions are the analogous of the ideal variant. The codeword of a message $\tau \in \mathcal{M}$ is $p(\cdot \mid \tau \circ X')$. When given a codeword $p(\cdot \mid Y)$, the decoding function outputs the message $\tau$ for which $\kappa\left(Y, \tau \circ X'\right) \geq \kappa\left(Y, \sigma \circ X'\right)$, for every $\sigma \in \mathcal{M}$.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{\dir/emp_agree_on_code.png}
