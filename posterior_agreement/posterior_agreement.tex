@@ -395,9 +395,11 @@ Unfortunately, the robustness comes at the price of less messages. If we use cod
 
 \subsubsection*{Intuition on Shannon's channel coding theorem}
 
-We started by using the binary noisy channel to send bits and we are now devising codes to send a finite set of letters through the binary noisy channel. In a similar manner, we can devise codes to send words through the binary noisy channel, by creating a code that maps words to bit strings of fixed length.\carlos{Why are we talking only of finite sentences $S$? In practice, I want to send sentences of variable lengths. Also, why don't we allow encodings of different lengths?} 
+We started by using the binary noisy channel to send bits and we are now devising codes to send a finite set of letters through the binary noisy channel. In a similar manner, we can devise codes to send words through the binary noisy channel, by creating a code that maps words to bit strings of fixed length.
+%\carlos{Why are we talking only of finite sentences $S$? In practice, I want to send sentences of variable lengths. Also, why don't we allow encodings of different lengths?} 
 
-We can continue in this way to create codes to send images of a fixed size, videos of a fixed length, and so on.\carlos{Why the obsession with fixed size?} All this is done by using longer codewords. 
+We can continue in this way to create codes to send images of a fixed size, videos of a fixed length, and so on.%\carlos{Why the obsession with fixed size?} 
+All this is done by using longer codewords. 
 
 %Observe, however, that the length $n$ of a codeword must be sufficiently large in order to
 %%
@@ -557,7 +559,7 @@ The code's encoder function $\mathit{Enc}$ is defined as follows. For a message 
 
 The code's decoder function $\mathit{Dec}$ is defined as follows. Given the string $\mathbf{s}^n$ output by the channel, $\mathit{Dec}$ goes through each message $m$ and tests if $(\mathit{Enc}(m), \mathbf{s}^n)$ is jointly typical with respect to the codeword input-output distribution $p_{S^n\hat{S}^n}$. $\mathit{Dec}$ outputs the first message for which this test succeeds. If no message succeeds on the test, then $\mathit{Dec}$ outputs an arbitrary message.
 
-\carlos{Remind the reader that the sender and the receiver agree in advance on $\mathit{Enc}$ and $\mathit{Dec}$. Therefore, the receiver also knows both $\mathit{Enc}$ and the set $\{1, 2, \ldots, \lfloor 2^{nr}\rfloor$ of messages.}
+%\carlos{Remind the reader that the sender and the receiver agree in advance on $\mathit{Enc}$ and $\mathit{Dec}$. Therefore, the receiver also knows both $\mathit{Enc}$ and the set $\{1, 2, \ldots, \lfloor 2^{nr}\rfloor$ of messages.}
 
 \begin{theorem}
 The probability $\prob\left(\mathcal{E}\right)$ of a communication error for Shannon's random code goes to 0 as $n \to \infty$.
