@@ -716,27 +716,64 @@ Observe that such a set of transformations does not necessarily always exist. Fo
 \subsection{Probability of a communication error}
 \label{sub:prob_comm_error}
 
-\begin{theorem}
-The probability of a communication error is bounded above by 
+\begin{definition}
+The \emph{expected log posterior agreement kernel of an algorithm} is $\mathcal{E} := \mathbb{E}_{X', X''}\left[\log \kappa\left(X', X''\right)\right]$.
+\end{definition}
+
+\begin{definition}
+An algorithm fulfils \emph{the asymptotic equipartition property (AEP)} if
+$\log \kappa\left(X', X''\right)$ converges in probability to $\mathcal{E}$, as $n \to \infty$, where $n$ is the size of $X'$.
+\end{definition}
+
+\begin{definition}
+For $\epsilon > 0$ and $n \in \mathbb{N}
+$, the \emph{set $A^{(n)}_\epsilon$ of $(\epsilon, n)$-typical pairs} consists of all pairs $X', X''$ of instances of size $n$ such that
 %
 \begin{equation}
-P_{(n)} = \exp\left(- I + \log m + \epsilon \log\left|\mathcal{C}\right|\right),
+\left|\log \kappa\left(X', X''\right) -  \mathcal{E}\right| < \epsilon.
+\end{equation}
+%
+\end{definition}
+
+\begin{exercise}
+Show that as $n \to \infty$, $\log\kappa\left(X', X''\right)$ is very close to $\mathcal{E}$ with high probability. That is, show that for any $\epsilon > 0$, there is a sufficiently large $N$, such that for any $n \geq N$, $\prob\left(A^{(n)}_\epsilon\right) \geq 1 - \epsilon$.
+\label{ex:almost_all_typical_pa}
+\end{exercise}
+
+\begin{exercise}
+Show that as $n \to \infty$, one can ignore those pairs $X', X''$ for which $\kappa\left(X', X''\right)$ is negligible. That is, show that for any $\epsilon > 0$, there is a sufficiently large $N$, such that for any $n \geq N$,
+%
+\begin{equation}
+\prob\left(\kappa\left(X', X''\right) < 2^{(\mathcal{E} - \epsilon)}\right) < \epsilon.
+\end{equation}
+%
+\label{ex:ignore_negligible_pa}
+\end{exercise}
+
+\begin{theorem}
+Assume given an algorithm that fulfils the AEP.
+For $\epsilon > 0$, there is a sufficiently large $N$, such that for any $n \geq N$, the probability of a communication error is bounded above by 
+%
+\begin{equation}
+P_{(n)} = \left(1 + \rho\right)\exp\left(-\log\left|\mathcal{C}\right|\left(I - \frac{\log m}{\log \left|\mathcal{C}\right|} -  \frac{\epsilon}{m\log \left|\mathcal{C}\right|}\right)\right) + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|},
 \label{eq:prob_comm_error_empirical_var}
 \end{equation}
 %
 where
 %
 \begin{equation}
-I := \mathbb{E}_{X', X''}\left[\log \left(\left|\mathcal{C}\right|k(X', X'')\right)\right]
+I := \frac{1}{\log\left|\mathcal{C}\right|}\mathbb{E}_{X', X''}\left[\log \left(\left|\mathcal{C}\right|k(X', X'')\right)\right]
 \label{eq:exp_log_pa}
 \end{equation}
 %
 \label{thm:comm_error_emp_var}
 \end{theorem}
 
-One can show that $P_{(n)} \to 0$ as $n \to \infty$ by choosing $\epsilon$ sufficiently small and ensuring that $I - \log m = \Omega(n)$.
+One can show that $P_{(n)} \to 0$ as $n \to \infty$ by choosing $\epsilon$ sufficiently small and ensuring that $I - \frac{\log m}{\log \left|\mathcal{C}\right|} > 0$.
 
 \begin{proof}
+Let $\epsilon > 0$. We assume that $\kappa\left(X', X''\right) < 2^{(\mathcal{E} - \epsilon)}$ for all pairs $X', X''$ of instances of size $n$. The proof is easily adapted to the more general case, by using Exercise~\ref{ex:ignore_negligible_pa}. This is left as an exercise.
+
 Let $\tau_s$ be the message sent by the sender and let $\hat{\tau}$ be the message guessed by the receiver. Just as in the proof of Theorem~\ref{thm:shannon_random_code}, one can show that $\prob\left(\hat{\tau} \neq \tau_s\right) = \prob\left(\hat{\tau} \neq \mathit{id}\right)$, where $\mathit{id}$ is some arbitrary transformation. Without loss of generality, we assume that $\mathit{id}$ is the identity transformation.
 
 Using the definition of communication error, we get that
@@ -779,35 +816,81 @@ For the last inequality, we used the assumption that $\sum_{\tau} p(c \mid \tau 
 
 We have then that
 %
-\begin{align*}
+\begin{align}
 \prob\left(\hat{\tau} \neq \mathit{id}\right) &\leq \sum_{\tau \neq \mathit{id}} \mathbb{E}_{X', X''}\left[\frac{1 + \rho}{\left|\mathcal{C}\right|\kappa\left(X', X''\right)}\right]\\
-&= (1 + \rho)\left(m - 1\right) \mathbb{E}_{X', X''}\exp\left(-\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)\right)\\
-&\leq m (1 + \rho) \; \mathbb{E}_{X', X''}\exp\left(-\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)\right)\\
-&= (1 + \rho)\mathbb{E}_{X', X''}\exp\left(-\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right) + \log m\right)\\
-&\approx \; \mathbb{E}_{X', X''}\exp\left(-\hat{I} + \log m\right).
-\end{align*}
-%
-Here, for simplicity, we assumed $1 + \rho \approx 1$.
-
-To provide an upper bound to $\prob\left(\hat{\tau} \neq \mathit{id}\right)$, we must bound the behavior of the random variable $\hat{I} = \log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)$. To do this, we assume that $\hat{I}$ satisfies \emph{an asymptotic equipartition property} in the sense that, as $n \to \infty$, $\hat{I} \to I$, where $I = \mathbb{E}_{X', X''}\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)$, the expected log posterior agreement. Under this assumption, for every $\epsilon, \delta > 0$, there is $n_0 \in \mathbb{N}$ such that for any $n > n_0$,
-%
-$$\prob\left(\left|\hat{I} - I\right| \leq \epsilon \log \left|\mathcal{C}\right|\right) > 1 - \delta.$$
+&= \frac{\left(1 + \rho\right)(m - 1)}{\left|\mathcal{C}\right|}\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)}\right]\\
+&\leq \frac{\left(1 + \rho\right)m}{\left|\mathcal{C}\right|}\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)}\right].\label{eq:curr_upp_bound}
+\end{align}
 %
 
-\todo{Explain why this assumption is reasonable. In particular, explain its connection to typicality.}
+Observe that pairs $X', X''$ where $\kappa\left(X', X''\right)$ are very low pose a serious threat to our attempt to bound $\prob\left(\hat{\tau} \neq \mathit{id}\right)$. Fortunately, by the AEP property, Exercises~\ref{ex:almost_all_typical_pa}, and our assumption that $\kappa(X', X'') \geq 2^{\mathcal{E} - \epsilon}$, we can ignore them as follows. Choose a sufficiently large $N$ so that, for any $n \geq N$, $\prob\left(X', X'' \notin A^{(n)}_{\epsilon/m}\right) < \epsilon / m$. Then
+%
+\begin{align}
+\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)}\right]
+&\leq \left(
+\begin{array}{l}
+\sum_{X', X'' \in A^{(n)}_{\epsilon/m}}p(X', X'')\frac{1}{\kappa\left(X', X''\right)} +\\ 
+\sum_{X', X'' \notin A^{(n)}_{\epsilon/m}}p(X', X'')\frac{1}{\kappa\left(X', X''\right)}
+\end{array}\right)\\
+&\leq \left(
+\begin{array}{l}
+\sum_{X', X'' \in A^{(n)}_{\epsilon/m}}p(X', X'')\frac{1}{\kappa\left(X', X''\right)} +\\ 
+2^{\epsilon - \mathcal{E}}\prob\left(X', X'' \notin A^{(n)}_{\epsilon/m}\right)
+\end{array}\right)\\
+&\leq \left(
+\begin{array}{l}
+\sum_{X', X'' \in A^{(n)}_{\epsilon/m}}p(X', X'')\frac{1}{\kappa\left(X', X''\right)} +\\ 
+2^{\epsilon - \mathcal{E}}\frac{\epsilon}{m}
+\end{array}\right)\\
+&= \mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)} \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\epsilon}{m}.
+\end{align}
 
-With this assumption, we can derive the following:
+If we now substitute this into (\ref{eq:curr_upp_bound}), we get that
 %
-\begin{align*}
-\prob\left(\hat{\tau} \neq \mathit{id}\right) &\leq \mathbb{E}_{X', X''}\exp\left(-\hat{I} + \log m\right)\\
-&= \mathbb{E}_{X', X''}\exp\left(-\hat{I} + (I-I) + \log m\right)\\
-&= \mathbb{E}_{X', X''}\exp\left(-I + (I - \hat{I}) + \log m\right)\\
-&\leq \mathbb{E}_{X', X''}\exp\left(-I + \left|I - \hat{I}\right| + \log m\right)\\
-&\leq \mathbb{E}_{X', X''}\exp\left(-I + \epsilon \log \left|\mathcal{C}\right| + \log m\right)\\
-&= \exp\left(-I + \epsilon \log \left|\mathcal{C}\right| + \log m\right).
-\end{align*}
-%
+\begin{align}
+\prob\left(\hat{\tau} \neq \mathit{id}\right) &\leq \frac{\left(1 + \rho\right)m}{\left|\mathcal{C}\right|}\left(\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)} \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\epsilon}{m}\right)\\
+&= \frac{\left(1 + \rho\right)m}{\left|\mathcal{C}\right|}\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)} \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}\\
+&= \left(1 + \rho\right)\mathbb{E}_{X', X''}\left[\exp\left(- \log\kappa\left(X', X''\right) + \log m - \log \left|\mathcal{C}\right|\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}\\
+&\leq \left(1 + \rho\right)\mathbb{E}_{X', X''}\left[\exp\left(- \mathcal{E} + \frac{\epsilon}{m} + \log m - \log \left|\mathcal{C}\right|\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}\\
+&= \left(1 + \rho\right)\mathbb{E}_{X', X''}\left[\exp\left(-\log\left|\mathcal{C}\right|\left(I + \frac{\epsilon}{m\log \left|\mathcal{C}\right|} + \frac{\log m}{\log \left|\mathcal{C}\right|}\right)\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}\\
+&= \left(1 + \rho\right)\exp\left(-\log\left|\mathcal{C}\right|\left(I - \frac{\log m}{\log \left|\mathcal{C}\right|} -  \frac{\epsilon}{m\log \left|\mathcal{C}\right|}\right)\right) + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}.
+\end{align}
 This concludes the proof.
+%
+%
+%\begin{align*}
+%&= (1 + \rho)\left(m - 1\right) \mathbb{E}_{X', X''}\exp\left(-\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)\right)\\
+%&\leq m (1 + \rho) \; \mathbb{E}_{X', X''}\exp\left(-\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)\right)\\
+%&= (1 + \rho)\mathbb{E}_{X', X''}\exp\left(-\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right) + \log m\right).
+%\end{align*}
+%
+%
+%To provide an upper bound to $\prob\left(\hat{\tau} \neq \mathit{id}\right)$, we must bound the behavior of the random variable $\hat{I} = \log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)$. Here is where the AEP and typicality play their role. Choose a sufficiently large $N$ so that for any $n \geq N$, $\prob\left(A^{(n)}_\epsilon\right) \geq 1 - \epsilon$. Then show that
+%
+%%\begin{align*}
+%%\prob\left(\hat{\tau} \neq \mathit{id}\right) &= (1 + \rho)\mathbb{E}_{X', X''}\exp\left(-\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right) + \log m\right)\\
+%%&\leq (1 + \rho)\left(
+%%\begin{array}{l}
+%%\sum_{X', X'' \in A^{(n)}_\epsilon}p(X', X'')\exp\left(- \mathcal{E} + \log m + \log \left|\mathcal{C}\right| + \epsilon\right) + \sum_{}\right)
+%%\end{align*}
+%
+%To do this, we assume that $\hat{I}$ satisfies \emph{an asymptotic equipartition property} in the sense that, as $n \to \infty$, $\hat{I} \to I$, where $I = \mathbb{E}_{X', X''}\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)$, the expected log posterior agreement. Under this assumption, for every $\epsilon, \delta > 0$, there is $n_0 \in \mathbb{N}$ such that for any $n > n_0$,
+%%
+%$$\prob\left(\left|\hat{I} - I\right| \leq \epsilon \log \left|\mathcal{C}\right|\right) > 1 - \delta.$$
+%%
+%
+%With this assumption, we can derive the following:
+%%
+%\begin{align*}
+%\prob\left(\hat{\tau} \neq \mathit{id}\right) &\leq \mathbb{E}_{X', X''}\exp\left(-\hat{I} + \log m\right)\\
+%&= \mathbb{E}_{X', X''}\exp\left(-\hat{I} + (I-I) + \log m\right)\\
+%&= \mathbb{E}_{X', X''}\exp\left(-I + (I - \hat{I}) + \log m\right)\\
+%&\leq \mathbb{E}_{X', X''}\exp\left(-I + \left|I - \hat{I}\right| + \log m\right)\\
+%&\leq \mathbb{E}_{X', X''}\exp\left(-I + \epsilon \log \left|\mathcal{C}\right| + \log m\right)\\
+%&= \exp\left(-I + \epsilon \log \left|\mathcal{C}\right| + \log m\right).
+%\end{align*}
+%%
+%This concludes the proof.
 \end{proof}
 
 Recall that the goal is to be able to maximize the number of distinguishable messages that can be sent through the channel. Hence, we must aim to make both $m$ and $I$ as large as possible. The algorithm can only influence $I$ and, therefore, good algorithms \emph{shall maximize the expected log posterior agreement}.
@@ -821,7 +904,7 @@ Computing $I$ requires the underlying distribution of $X'$ and $X''$, which we a
 %
 where $\left\{X'_1, X''_1, \ldots, X'_L, X''_L\right\}$ is a set of observations.
 
-Finally, we remark some analogies with Shannon's channel coding theorem. The quantity $\frac{1}{n}\mathbb{E}_{X', X''}\log\left(\left|\mathcal{C}\right|\kappa\left(X', X''\right)\right)$ plays the role the input-output mutual information. The value $\log m / n$ plays the role of the code rate.
+Finally, we remark some analogies with Shannon's channel coding theorem. The quantity $I$ plays the role the input-output mutual information. The value $\log m / n$ plays the role of the code rate.
 %
 %\section{Applications}
 %
