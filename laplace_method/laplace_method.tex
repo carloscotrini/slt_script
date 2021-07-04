@@ -96,7 +96,7 @@ Complete the following derivation
 %
 \begin{align}
 Z &= \sum_{c} \exp\left(\frac{1}{T}\left(1 + \sum_{i \leq N}c_i\right)^2\right)\\ 
-&= \left(\pi T\right)^{-1/2}\int\exp\left(-\frac{1}{T}y^2 + \frac{2}{T}y\right) \prod_{i \leq N}\exp\left(\frac{2}{T}y c_i\right) dy\\
+&= \left(\pi T\right)^{-1/2}\int\sum_{c}\exp\left(-\frac{1}{T}y^2 + \frac{2}{T}y\right) \prod_{i \leq N}\exp\left(\frac{2}{T}y c_i\right) dy\\
 &= \ldots \\
 &= \left(\pi T\right)^{-1/2}\int \exp\left(-\frac{1}{T}f(y)\right) dy,\label{eq:norm_cost_ugly_integral}
 \end{align}
@@ -401,10 +401,10 @@ where
 f_X(\mathbf{y}) = \frac{1}{2}\sum_{k \leq K}\left\|y_k\right\|^2 - \frac{T}{N}\sum_{i \leq N}\log\sum_{k \leq K}\exp\left(\frac{1}{T}x_i^\top y_k\right).
 \end{equation}
 
-The exercises below show that when $T > 1$, the Hessian of $f_X$ evaluated at any point is positive definite. Therefore, $f_X$ has a unique global minimum and $H$, the Hessian evaluated at that minimum, is positive definite. We can then estimate $Z_X$ with
+The exercises below show that when $T > 1$, the Hessian of $f_X$ evaluated at any point is positive definite. Therefore, $f_X$ has a unique global minimum $\mathbf{y}^*$ and $H$, the Hessian evaluated at $\mathbf{y}^*$, is positive definite. We can then estimate $Z_X$ with
 %
 \begin{equation}
-Z_X \approx e^{-\frac{1}{2T}}\left(\frac{2\pi T}{N}\right)^{-\frac{KD}{2}}\left|\frac{NH}{2\pi T}\right|^{-\frac{1}{2}}.
+Z_X \approx \exp\left(-\frac{1}{2T}-\frac{N}{T}f_X(\mathbf{y}^*)\right)\left(\frac{2\pi T}{N}\right)^{-\frac{KD}{2}}\left|\frac{NH}{2\pi T}\right|^{-\frac{1}{2}}.
 \end{equation}
 %
 
