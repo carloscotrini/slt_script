@@ -122,7 +122,7 @@ Show that $f$ has a unique global minimum at a point $y^*$ such that
 y^* = 1 + N \tanh\left(\frac{2}{T}y^*\right).
 \end{equation}
 % 
-Furthermore, show that $\frac{df}{dy}\bigr|_{y^*} > 0$ for sufficiently large $N$.
+Furthermore, show that $\frac{d^2f}{dy^2}\bigr|_{y^*} > 0$ for sufficiently large $N$.
 \end{exercise}
 
 As a result, if we apply Laplace's method for sufficiently large $N$, the normalization constant can be approximated to $\exp\left(-\frac{1}{T}f(y^*)\right)$.
@@ -226,9 +226,9 @@ We now prove the claim.
 %
 \begin{align}
 &- \frac{1}{2N}\sum_{k \leq K}\left\|\sum_{i \leq N} M_{ik}x_i\right\|^2 + \frac{1}{2}\\
-&= -\frac{1}{2N}\sum_{k \leq K}\left(2\sum_{i < j \leq N}M_{ik}M_{jk}x_i^\top x_j^\top + \sum_{i \leq N} M_{ik}^2 x_i^\top x_i\right) + \frac{1}{2}\\
-&= -\frac{1}{N}\sum_{k \leq K}\sum_{i < j \leq N}M_{ik}M_{jk}x_i^\top x_j^\top -\frac{1}{2N}\sum_{k \leq K} \sum_{i \leq N} M_{ik}^2 x_i^\top x_i + \frac{1}{2}\\
-&= -\frac{1}{N}\sum_{k \leq K}\sum_{i < j \leq N}M_{ik}M_{jk}x_i^\top x_j^\top -\frac{1}{2} + \frac{1}{2} = R(M, X)
+&= -\frac{1}{2N}\sum_{k \leq K}\left(2\sum_{i < j \leq N}M_{ik}M_{jk}x_i^\top x_j + \sum_{i \leq N} M_{ik}^2 x_i^\top x_i\right) + \frac{1}{2}\\
+&= -\frac{1}{N}\sum_{k \leq K}\sum_{i < j \leq N}M_{ik}M_{jk}x_i^\top x_j -\frac{1}{2N}\sum_{k \leq K} \sum_{i \leq N} M_{ik}^2 x_i^\top x_i + \frac{1}{2}\\
+&= -\frac{1}{N}\sum_{k \leq K}\sum_{i < j \leq N}M_{ik}M_{jk}x_i^\top x_j -\frac{1}{2} + \frac{1}{2} = R(M, X)
 \end{align}
 %%
 %\begin{align}

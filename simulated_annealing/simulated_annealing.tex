@@ -182,7 +182,7 @@ the course \emph{probabilistic artificial intelligence}.
 
 MCMC sampling exploits this theorem to efficiently produce samples from $p$ as follows. 
 First, pick an arbitrary $C_0 \in \mathcal{C}$. Then for $t = 1, 2, \ldots$, sample $C_t$ from $\pi\left(\cdot \mid C_{t-1}\right)$. The samples eventually look like samples from $p$ if the conditions
-below are met.
+above are met.
 
 \subsection{The Metropolis-Hastings trick}
 
@@ -223,7 +223,7 @@ q(c' \mid c)A(c, c') & \text{if $c \neq c'$ and}\\
 \end{definition}
 
 \begin{exercise}
-Show that $\pi(\cdot \mid c)$ fulfils the requirements from Theorem 1.
+Show that $\pi(\cdot \mid c)$ fulfils the requirements from Theorem~\ref{thm:convergence_markov}.
 \end{exercise}
 
 \begin{definition}

@@ -430,8 +430,9 @@ An \emph{$(M, n)$-code} is a pair $(\mathit{Enc}, \mathit{Dec})$ of functions wi
 \begin{definition}
 The \emph{rate of a $(M, n)$-code} is 
 %
-$$\frac{\log M}{n}.$$
+$$\frac{\log M}{n},$$
 %
+where the logarithm is in base 2.
 \end{definition}
 
 Observe that if a $(M, n)$-code has rate $r$, then $M = 2^{nr}$.
@@ -445,7 +446,7 @@ $$\frac{1}{M}\sum_{i \leq M} \prob\left(\mathit{Dec}(\hat{W}) \neq i \mid W = \m
 where $\prob\left(\mathit{Dec}(\hat{W}) \neq i \mid W = \mathit{Enc}\left(i\right)\right)$ is the probability that the receiver decodes something different to $i$, given that we sent $\mathit{Enc}\left(i\right)$ through the channel.
 \end{definition}
 
-Intuitively, the probability of a communication error is the probability that the receives decodes a wrong message when we send him the codeword of a message chosen uniformly at random.
+Intuitively, the probability of a communication error is the probability that the receiver decodes a wrong message when we send him the codeword of a message chosen uniformly at random.
 
 \begin{example}
 The $n$-redundant code discussed above is an example of a $(2, n)$-code, whose rate is $\log 2 / n = 1/n$. In contrast, the na\"ive code is an example of a $(2^n, n)$-code, whose rate is $\log 2^n / n = 1$.
@@ -529,7 +530,7 @@ In the context of communication via a channel, the following theorem justifies t
 
 \begin{enumerate}
 \item Suppose that we build a codeword $\mathbf{s}^n$ at random by choosing each of its symbols at random according to $p_S$, the distribution that attains channel capacity. Then we send $\mathbf{s}^n$ through the channel and let $\hat{\mathbf{s}}^n$ be the output codeword. Then $(\mathbf{s}^n, \hat{\mathbf{s}}^n)$ is jointly typical with high probability.
-\item Suppose now that we build another codeword ${\mathbf{q}}^n$ at random using the same procedure. Then it is very \emph{unlikely} that $({\mathbf{q}}^n, \mathbf{y}^n)$ is jointly typical.
+\item Suppose now that we build another codeword ${\mathbf{q}}^n$ at random by choosing each of its symbols at random according to $p_S$. Then it is very \emph{unlikely} that $({\mathbf{q}}^n,\hat{\mathbf{s}}^n)$ is jointly typical.
 \end{enumerate}
 
 \begin{theorem}\mbox{  }
@@ -614,7 +615,7 @@ $$\prob\left(\mathcal{E} \mid M = 1\right) \leq \prob\left(\left(\mathbf{S}^n(1)
 We now apply Theorem~\ref{thm:joint_typical}, which implies the following:
 
 \begin{itemize}
-\item $\prob\left(\left(\mathbf{S}^n(1), \hat{\mathbf{S}}^n(1)\right) \notin A^{(n)}_{\epsilon}\right) \to 1$, as $n \to \infty$. In other words, $\prob\left(\left(\mathbf{S}^n(1), \hat{\mathbf{S}}^n(1)\right) \notin A^{(n)}_{\epsilon}\right) \to 0$, as $n \to \infty$.
+\item $\prob\left(\left(\mathbf{S}^n(1), \hat{\mathbf{S}}^n(1)\right) \in A^{(n)}_{\epsilon}\right) \to 1$, as $n \to \infty$. In other words, $\prob\left(\left(\mathbf{S}^n(1), \hat{\mathbf{S}}^n(1)\right) \notin A^{(n)}_{\epsilon}\right) \to 0$, as $n \to \infty$.
 \item $\prob\left(\left(\mathbf{S}^n(w), \hat{\mathbf{S}}^n(1)\right) \in A^{(n)}_{\epsilon}\right) \leq 2^{-n\left(I(S;\hat{S})-3\epsilon\right)}$. This is because, for $w > 1$, $\mathbf{S}^n(1)$ and $\mathbf{S}^n(w)$ were independently drawn from $p_{S^n}$ and, therefore, $\hat{\mathbf{S}}^n(1)$ and $\mathbf{S}^n(w)$ were independently drawn from $p_{\hat{S}^n}$ and $p_{S^n}$, respectively.
 \end{itemize}
 

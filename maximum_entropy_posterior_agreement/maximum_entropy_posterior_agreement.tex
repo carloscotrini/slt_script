@@ -31,7 +31,7 @@ where $T > 0$ is a hyper-parameter called the \emph{temperature}.
 An alternative model selection technique that we study in this course is \emph{posterior agreement}. For this, we use two independent observations $X'$ and $X''$ and define the \emph{posterior agreement kernel} between $X'$ and $X''$:
 %
 \begin{equation}
-\kappa(X', X'') := \sum_{c \in C} p(c \mid X) p(c \mid X'').
+\kappa(X', X'') := \sum_{c \in C} p(c \mid X') p(c \mid X'').
 \label{eq:kernel_post_agr}
 \end{equation}
 %
@@ -92,7 +92,7 @@ We perceive the phenomenon through \emph{observations}, which we represent with 
 We also assume given a finite\footnote{ME+PA can also be applied to continuous hypothesis classes, but the foundations of this method have only been established for finite hypothesis classes.} hypothesis class $\mathcal{C}$ comprising all candidate models.
 
 \begin{definition}
-A \emph{cost function} is a function $R : \mathcal{C} \times \mathcal{R} \to [0, \infty)$.
+A \emph{cost function} is a function $R : \mathcal{C} \times \mathcal{X} \to [0, \infty)$.
 \label{def:cost_fun}
 \end{definition}
 
@@ -274,7 +274,7 @@ We argue here that the posterior agreement kernel is less sensitive to noise tha
 \end{equation}
 %
 \begin{equation}
-\mathbb{E}_{C | X'}[p(C \mid X'')] = \mathbb{E}_{C | X}[[p(C \mid X)] + O(\left\|\Delta\right\|^2).
+\mathbb{E}_{C | X'}[p(C \mid X'')] = \mathbb{E}_{C | X}[p(C \mid X)] + O(\left\|\Delta\right\|^2).
 \end{equation}
 %
 Use the following second-order Taylor approximation:
@@ -301,7 +301,7 @@ p(C \mid X') = p(C \mid X) + \left(\nabla_{X}p(C\mid X)\right)^\top \Delta + O(\
 \section{The random array}
 \label{sec:random_array}
 
-We present an artificial toy example, called \emph{the random array} that illustrates the power of ME+PA. In particular, it illustrates the ways in which empirical risk minimization omakes overconfident estimates when there is insufficient data and noise interference.
+We present an artificial toy example, called \emph{the random array} that illustrates the power of ME+PA. In particular, it illustrates the ways in which empirical risk minimization makes overconfident estimates when there is insufficient data and noise interference.
 
 \subsection{Setup}
 
