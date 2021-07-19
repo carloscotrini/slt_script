@@ -512,7 +512,7 @@ this theorem.
 For $R(\cdot, \theta, X)$, the $K$-means cost function, maximizing $H[p(\cdot \mid \theta, X)]$ with respect to $\theta$ is equivalent to minimizing
 %
 \begin{equation}
-F(\theta, X) := -T \sum_{i \leq N}\log \left(\sum_{k \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{c(i)}\right\|^2\right)\right).
+F(\theta, X) := -T \sum_{i \leq N}\log \left(\sum_{k \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)\right).
 \label{eq:gibbs_free_energy_da}
 \end{equation}
 %
@@ -550,13 +550,13 @@ From now on, we restrict the domain of $\frac{\partial F}{\partial \theta_\ell \
 Inside $\mathcal{B}$,
 %
 \begin{equation}
-\frac{\partial F}{\partial \theta_k} \approx -\frac{2}{T}\sum_{i \leq N} \frac{A_{ik}}{B_i},
+\frac{\partial F}{\partial \theta_k} \approx -2\sum_{i \leq N} \frac{A_{ik}}{B_i},
 \end{equation}
 %
 where
 %
 \begin{equation}
-A_{ik} = (x_i - \theta_k)\left(1 + \frac{2}{T}x_i^\top \theta_i\right) \qquad \text{and} \qquad B_i = \sum_{k' \leq K}\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right).
+A_{ik} = (x_i - \theta_k)\left(1 + \frac{2}{T}x_i^\top \theta_k\right) \qquad \text{and} \qquad B_i = \sum_{k' \leq K}\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right).
 \end{equation}
 %
 \label{lem:approx_deriv}
@@ -572,23 +572,23 @@ Observe that, inside $\mathcal{B}$,
 Hence,
 %
 \begin{align}
-\exp\left(- \frac{1}{T}\left\|x_i - \theta_k\right\|^2\right) &\approx \exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\exp\left(\frac{2}{T}x_i^\top \theta_k\right)\\
-&\approx \exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_k\right).\\
+\exp\left(- \frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right) &\approx \exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\exp\left(\frac{2}{T}x_i^\top \theta_{k}\right)\\
+&\approx \exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_{k}\right).\\
 \end{align}
 %
 Therefore,
 %
 \begin{align}
-\facprob{i}{c(i)}{\theta}{X} &= \frac{\exp\left(-\frac{1}{T}\left\|x_i - \theta_k\right\|^2\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{k'}\right\|^2\right)}\\
-&\approx \frac{\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_k\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}\\
-&= \frac{\left(1 + \frac{2}{T}x_i^\top \theta_{k}\right)}{\sum_{k' \leq K}\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}.\label{eq:simplified_factor_prob}
+\facprob{i}{k}{\theta}{X} &= \frac{\exp\left(-\frac{1}{T}\left\|x_i - \theta_{k}\right\|^2\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i - \theta_{k'}\right\|^2\right)}\\
+&\approx \frac{\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_{k}\right)}{\sum_{k' \leq K}\exp\left(-\frac{1}{T}\left\|x_i\right\|^2\right)\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}\\
+&= \frac{1 + \frac{2}{T}x_i^\top \theta_{k}}{\sum_{k' \leq K}\left(1 + \frac{2}{T}x_i^\top \theta_{k'}\right)}.\label{eq:simplified_factor_prob}
 \end{align}
 %
-The result follows from plugging (\ref{eq:simplified_factor_prob}) in the following equation:
+The result follows from plugging (\ref{eq:simplified_factor_prob}) in the following equation, which is easy to prove:
 %Start from
 %
 \begin{equation}
-\frac{\partial F}{\partial \theta_k} = - \frac{2}{T} \sum_{i \leq N} \facprob{i}{k}{\theta}{X}(x_i - \theta_k).
+\frac{\partial F}{\partial \theta_k} = - 2 \sum_{i \leq N} \facprob{i}{k}{\theta}{X}(x_i - \theta_k).
 \label{eq:start_eq_da}
 \end{equation}
 %
@@ -607,7 +607,7 @@ For $m, m' \leq d$, apply the quotient rule to show that
 \begin{equation}
 \frac{\partial F}{\partial \theta_{\ell m'} \partial \theta_{k m}}\Bigr|_{\theta^\infty}
 =
--2\sum_{i \leq N}\left(\frac{1}{B_i}\Bigr|\frac{\partial A_{ikm}}{\partial \theta_{\ell m'}}\Bigr|_{\theta^\infty}\right) + 2 \sum_{i \leq N} \frac{A_{ikm}\Bigr|_{\theta^\infty}}{\left(B_i \Bigr|_{\theta^\infty}\right)^2}\left(\frac{\partial B_i}{\partial \theta_{\ell m'}}\Bigr|_{\theta^\infty}\right).
+-2\sum_{i \leq N}\left(\frac{1}{B_i}\Bigr|_{\theta^\infty}\frac{\partial A_{ikm}}{\partial \theta_{\ell m'}}\Bigr|_{\theta^\infty}\right) + 2 \sum_{i \leq N} \frac{A_{ikm}\Bigr|_{\theta^\infty}}{\left(B_i \Bigr|_{\theta^\infty}\right)^2}\left(\frac{\partial B_i}{\partial \theta_{\ell m'}}\Bigr|_{\theta^\infty}\right).
 \end{equation}
 %
 Observe now that
@@ -639,7 +639,7 @@ This implies that
 Plugging this into Equation~\ref{eq:estimate_hessian_da} yields the desired result.
 \end{proof}
 
-Observe that, with high probability, $Q$ is positive semi-definite.
+Observe that, with high probability, $Q = \frac{2}{K^2}XX^\top$ is positive semi-definite.
 
 \begin{lemma}
 Let $Q$ be a positive semi-definite matrix. Let $H$ be a block
