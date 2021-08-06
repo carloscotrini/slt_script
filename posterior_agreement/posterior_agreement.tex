@@ -68,7 +68,7 @@ Show that deterministic annealing (DA) satisfies the asymptotic equipartition pr
 Recall that the distribution $p(\cdot \mid \theta, X')$ computed by DA on a given sample of points $X' = \{x'_1, \ldots, x_n'\}$ factorizes as follows:
 %
 \begin{equation}
-p(c \mid \theta, \theta, X') = \prod_{i \leq n} p(c(i) \mid \theta, x'_i),
+p(c \mid \theta, X') = \prod_{i \leq n} p(c(i) \mid \theta, x'_i),
 \end{equation}
 %
 where
@@ -121,7 +121,7 @@ Then this algorithm fulfils the asymptotic equipartition property.
 
 The proof is analogous to the one above.
 
-\todo{Organization of these notes.}
+%\todo{Organization of these notes.}
 
 \section{Motivation}
 
@@ -164,7 +164,10 @@ Unfortunately, the empirical risk minimizer does not always minimize the expecte
 
 One can prevent such overfitting with techniques like regularization. This makes the solutions less sensitive to the noise in the sample. However, such techniques may lead to solutions that are too insensitive to the signal in the sample, failing to minimize the expected cost as well.
 
-Solving Problem~\ref{eq:stoch_min_span_tree} requires designing algorithms that strike a balance between two extremes. On one hand, algorithms may \emph{overfit} and produce solutions that are too sensitive to the noise in the sample. On the other hand, algorithms may \emph{underfit} and produce solutions that are too insensitive to the signal in the sample. These two extremes are illustrated in Figure\ref{fig:clustering}\todo{} for the problem of clustering. In the overfitting extreme, an algorithm may just make each point in the sample its own cluster (and this solution would actually minimize the expected cost). In the undefitting extreme, an algorithm may just put all points in the sample into one single cluster. The overfitting algorithm minimizes the cost, but is extremely sensitive to noise in the data, whereas the underfitting algorithm is very robust, but fails to minimize the expected cost. Can we find a common ground between these two?
+Solving Problem~\ref{eq:stoch_min_span_tree} requires designing algorithms that strike a balance between two extremes. On one hand, algorithms may \emph{overfit} and produce solutions that are too sensitive to the noise in the sample. On the other hand, algorithms may \emph{underfit} and produce solutions that are too insensitive to the signal in the sample. 
+%These two extremes are illustrated in Figure\ref{fig:clustering}\todo{} for the problem of clustering. 
+These two extremes can be illustrated in the case of clustering.
+In the overfitting extreme, an algorithm may just make each point in the sample its own cluster (and this solution would actually minimize the expected cost). In the undefitting extreme, an algorithm may just put all points in the sample into one single cluster. The overfitting algorithm minimizes the cost, but is extremely sensitive to noise in the data, whereas the underfitting algorithm is very robust, but fails to minimize the expected cost. Can we find a common ground between these two?
 
 %We present later scenarios where the empirical risk minimizer is not the best solution we can obtain, especially when we have only very few observations. One example, presented in Section~\ref{sec:random_array} is the problem of computing the minimum of an array $X = \left(X_1, \ldots, X_n\right)$ of random variables. Given just two observations $X^1$ and $X^2$, estimating $\min_i \mathbb{E}_X[X_i]$ with the empirical risk minimizer is not the best we can do. We also showed in that section, how combining maximum entropy and posterior agreement yielded a better estimator.
 
@@ -235,7 +238,7 @@ We remark that this protocol is just a thought experiment. The protocol is compu
 
 We now give a more precise overview by showing how posterior agreement works with a simple example. Let $\mathcal{A}_1$ and $\mathcal{A}_2$ be two algorithms that estimate the mean of a univariate distribution, given only a sample from that distribution. For example, $\mathcal{A}_1$ fits a Gaussian to the sample via maximum-likelihood estimation whereas $\mathcal{A}_2$ does the same, but only using only the maximum and the minimum of that sample. Suppose that both algorithms output Gaussian distributions that indicate where they believe that the mean is. 
 
-The protocol works as follows. Fix $n \in \mathbb{N}$, which denote the size of all the observations in the instance space. In our case, $n$ denotes the sample size. The sender and the receiver are given the algorithm under evaluation $\mathcal{A}_i$ and then they choose the size $m_n \in \mathbb{N}$ of the set of messages that they the sender will attempt to communicate. Recall that they want to choose $m_n$ as large as possible. However, a large $m_n$ increases the probability $P_n$ that the receiver fails to recognize the message from the codeword transmitted by the sender. We later see that the best choice for $m_n$ is defined by $\mathcal{A}_i$. 
+The protocol works as follows. Fix $n \in \mathbb{N}$, which denote the size of all the observations in the instance space. In our case, $n$ denotes the sample size. The sender and the receiver are given the algorithm under evaluation $\mathcal{A}_i$ and then they choose the size $m_n \in \mathbb{N}$ of the set of messages that the sender will attempt to communicate. Recall that they want to choose $m_n$ as large as possible. However, a large $m_n$ increases the probability $P_n$ that the receiver fails to recognize the message from the codeword transmitted by the sender. We later see that the best choice for $m_n$ is defined by $\mathcal{A}_i$. 
 
 The protocol proceeds then as follows:
 
@@ -558,7 +561,7 @@ To prove this, we present, for $n > 1$, a $(\lfloor 2^{nr}\rfloor, n)$-code whos
 
 The code's encoder function $\mathit{Enc}$ is defined as follows. For a message $m \leq \lfloor 2^{nr}\rfloor$, we define $\mathit{Enc}(m)$ as a string in $\mathbf{s}^n$ where each symbol was drawn from a distribution $p^* = \arg\max_{p(\cdot)} I(S; \hat{S})$. That is, a distribution that maximizes the channel's input-output mutual information and attains the channel's capacity.
 
-The code's decoder function $\mathit{Dec}$ is defined as follows. Given the string $\mathbf{s}^n$ output by the channel, $\mathit{Dec}$ goes through each message $m$ and tests if $(\mathit{Enc}(m), \mathbf{s}^n)$ is jointly typical with respect to the codeword input-output distribution $p_{S^n\hat{S}^n}$. $\mathit{Dec}$ outputs the first message for which this test succeeds. If no message succeeds on the test, then $\mathit{Dec}$ outputs an arbitrary message.
+The code's decoder function $\mathit{Dec}$ is defined as follows. Given the string $\hat{\mathbf{s}}^n$ output by the channel, $\mathit{Dec}$ goes through each message $m$ and tests if $(\mathit{Enc}(m), \hat{\mathbf{s}}^n)$ is jointly typical with respect to the codeword input-output distribution $p_{S^n\hat{S}^n}$. $\mathit{Dec}$ outputs the first message for which this test succeeds. If no message succeeds on the test, then $\mathit{Dec}$ outputs an arbitrary message.
 
 %\carlos{Remind the reader that the sender and the receiver agree in advance on $\mathit{Enc}$ and $\mathit{Dec}$. Therefore, the receiver also knows both $\mathit{Enc}$ and the set $\{1, 2, \ldots, \lfloor 2^{nr}\rfloor$ of messages.}
 
@@ -773,7 +776,7 @@ I := \frac{1}{\log\left|\mathcal{C}\right|}\mathbb{E}_{X', X''}\left[\log \left(
 One can show that $P_{(n)} \to 0$ as $n \to \infty$ by choosing $\epsilon$ sufficiently small and ensuring that $I - \frac{\log m}{\log \left|\mathcal{C}\right|} > 0$.
 
 \begin{proof}
-Let $\epsilon > 0$. We assume that $\kappa\left(X', X''\right) < 2^{(\mathcal{E} - \epsilon)}$ for all pairs $X', X''$ of instances of size $n$. The proof is easily adapted to the more general case, by using Exercise~\ref{ex:ignore_negligible_pa}. This is left as an exercise.
+Let $\epsilon > 0$. We assume that $\kappa\left(X', X''\right) \geq 2^{(\mathcal{E} - \epsilon)}$ for all pairs $X', X''$ of instances of size $n$. The proof is easily adapted to the more general case, by using Exercise~\ref{ex:ignore_negligible_pa}. This is left as an exercise.
 
 Let $\tau_s$ be the message sent by the sender and let $\hat{\tau}$ be the message guessed by the receiver. Just as in the proof of Theorem~\ref{thm:shannon_random_code}, one can show that $\prob\left(\hat{\tau} \neq \tau_s\right) = \prob\left(\hat{\tau} \neq \mathit{id}\right)$, where $\mathit{id}$ is some arbitrary transformation. Without loss of generality, we assume that $\mathit{id}$ is the identity transformation.
 
@@ -798,7 +801,7 @@ Here, $\mathbb{I}$ is the indicator function.
 We now apply Markov's inequality.
 %
 \begin{align*}
-\prob\left(\hat{\tau} \neq \mathit{id}\right) &\leq \sum_{\tau \neq \mathit{id}}\mathbb{E}_{X', X''}\left[\prob\left(\mathbb{I}\left\{\kappa\left(\tau\circ X', X''\right) \geq \kappa\left(X', X''\right)\right\} \mid \mathit{id}, X', X''\right)\right]\\
+\prob\left(\hat{\tau} \neq \mathit{id}\right) &\leq \sum_{\tau \neq \mathit{id}}\mathbb{E}_{X', X''}\left[\prob\left(\kappa\left(\tau\circ X', X''\right) \geq \kappa\left(X', X''\right) \mid \mathit{id}, X', X''\right)\right]\\
 &\leq \sum_{\tau \neq \mathit{id}}\mathbb{E}_{X', X''}\left[\frac{\mathbb{E}_\tau\left[\kappa\left(\tau \circ X', X''\right) \mid \mathit{id}, X', X'' \right]}{\kappa\left(X', X''\right)}\right].
 \end{align*}
 %
@@ -828,7 +831,7 @@ Observe that pairs $X', X''$ where $\kappa\left(X', X''\right)$ are very low pos
 %
 \begin{align}
 \mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)}\right]
-&\leq \left(
+&= \left(
 \begin{array}{l}
 \sum_{X', X'' \in A^{(n)}_{\epsilon/m}}p(X', X'')\frac{1}{\kappa\left(X', X''\right)} +\\ 
 \sum_{X', X'' \notin A^{(n)}_{\epsilon/m}}p(X', X'')\frac{1}{\kappa\left(X', X''\right)}
@@ -850,12 +853,22 @@ If we now substitute this into (\ref{eq:curr_upp_bound}), we get that
 %
 \begin{align}
 \prob\left(\hat{\tau} \neq \mathit{id}\right) &\leq \frac{\left(1 + \rho\right)m}{\left|\mathcal{C}\right|}\left(\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)} \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\epsilon}{m}\right)\\
-&= \frac{\left(1 + \rho\right)m}{\left|\mathcal{C}\right|}\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)} \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}\\
-&= \left(1 + \rho\right)\mathbb{E}_{X', X''}\left[\exp\left(- \log\kappa\left(X', X''\right) + \log m - \log \left|\mathcal{C}\right|\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}\\
-&\leq \left(1 + \rho\right)\mathbb{E}_{X', X''}\left[\exp\left(- \mathcal{E} + \frac{\epsilon}{m} + \log m - \log \left|\mathcal{C}\right|\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}\\
-&= \left(1 + \rho\right)\mathbb{E}_{X', X''}\left[\exp\left(-\log\left|\mathcal{C}\right|\left(I + \frac{\epsilon}{m\log \left|\mathcal{C}\right|} + \frac{\log m}{\log \left|\mathcal{C}\right|}\right)\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}\\
-&= \left(1 + \rho\right)\exp\left(-\log\left|\mathcal{C}\right|\left(I - \frac{\log m}{\log \left|\mathcal{C}\right|} -  \frac{\epsilon}{m\log \left|\mathcal{C}\right|}\right)\right) + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}.
+&= \frac{\left(1 + \rho\right)m}{\left|\mathcal{C}\right|}\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)} \mid X', X'' \in A^{(n)}_{\epsilon/m}\right] + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}.\label{eq:semifinal_result}
 \end{align}
+
+We can rewrite the expectation as follows:
+
+\begin{align}
+&\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)} \mid X', X'' \in A^{(n)}_{\epsilon/m}\right]\\ 
+&= \mathbb{E}_{X', X''}\left[\exp\left(- \log\kappa\left(X', X''\right) + \log m - \log \left|\mathcal{C}\right|\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right]\\
+&\leq \mathbb{E}_{X', X''}\left[\exp\left(- \mathcal{E} + \frac{\epsilon}{m} + \log m - \log \left|\mathcal{C}\right|\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right]\\
+&= \mathbb{E}_{X', X''}\left[\exp\left(-\log\left|\mathcal{C}\right|\left(I - \frac{\epsilon}{m\log \left|\mathcal{C}\right|} - \frac{\log m}{\log \left|\mathcal{C}\right|}\right)\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right].
+\end{align}
+
+If we substitute this into~(\ref{eq:semifinal_result}), we get that $\prob\left(\hat{\tau} \neq \mathit{id}\right)$ is bounded above by
+
+\begin{equation} \left(1 + \rho\right)\exp\left(-\log\left|\mathcal{C}\right|\left(I - \frac{\log m}{\log \left|\mathcal{C}\right|} -  \frac{\epsilon}{m\log \left|\mathcal{C}\right|}\right)\right) + 2^{\epsilon - \mathcal{E}}\frac{\left(1 + \rho\right)\epsilon}{\left|\mathcal{C}\right|}.
+\end{equation}
 This concludes the proof.
 %
 %

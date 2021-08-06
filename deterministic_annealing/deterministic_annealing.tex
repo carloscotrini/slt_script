@@ -209,7 +209,7 @@ of $p(\cdot \mid \theta, X)$ depends exclusively on $\mu$.
 \begin{lemma}
 %
 \begin{equation}
-\frac{\partial H \left[p(\cdot \mid \theta, X)\right]}{\partial \theta} = -\frac{1}{T}\mathbb{E}_{C \sim p(\cdot \mid \theta, X)}\left[\frac{\partial}{\partial \theta}R(C, \theta, X)\right], \text{ for $k \leq K$}.
+\frac{\partial H \left[p(\cdot \mid \theta, X)\right]}{\partial \theta_k} = -\frac{1}{T}\mathbb{E}_{C \sim p(\cdot \mid \theta, X)}\left[\frac{\partial}{\partial \theta_k}R(C, \theta, X)\right], \text{ for $k \leq K$}.
 \end{equation}
 %
 \label{lem:stationarity_condition}
@@ -320,7 +320,7 @@ procedure.
 \item Set $t \gets t + 1$ and
 %
 \begin{equation}
-\theta^{(t+1)}_k \gets \frac{\sum_{i \leq N} \facprob{i}{k}{\theta}{X}x_i}{\sum_{i \leq N}\facprob{i}{k}{\theta}{X}}, \qquad \text{for $k \leq K$}.
+\theta^{(t+1)}_k \gets \frac{\sum_{i \leq N} \facprob{i}{k}{\theta^{(t)}}{X}x_i}{\sum_{i \leq N}\facprob{i}{k}{\theta^{(t)}}{X}}, \qquad \text{for $k \leq K$}.
 \end{equation}
 %
 This procedure converges to a local maximum of $H[p(\cdot \mid \theta, X)]$.
@@ -379,13 +379,13 @@ and not as part of the hypothesis class. This is just to keep the presentation s
 \State \qquad $\texttt{close}\left(\cdot, \cdot\right)$ be a function that evaluates if two matrices are close.
 \Function{DetAnn}{$\epsilon$, \texttt{reduce}, \texttt{close}}
 \State $T \gets \infty$ \Comment{$\infty$ is a sufficiently large value.}
-\State $\theta \gets \$$ \Comment{Define arbitrary initial centroids.}
+\State $\theta_k \gets \$$, for $k \leq K$. \Comment{Define arbitrary initial centroids.}
 \While{$T > \epsilon$}
 \Repeat
-\State $\theta_0 \gets \theta$
-\State Compute $\facprob{i}{k}{\theta_0}{X}$, for $i \leq N$ and $k \leq K$
-\State $\displaystyle \theta \gets \frac{\sum_{i \leq N} \facprob{i}{k}{\theta_0}{X} x_i}{\sum_{i \leq N} \facprob{i}{k}{\theta_0}{X}}$
-\Until{$\texttt{close}\left(\theta, \theta_0\right)$}
+\State $\theta^0_k \gets \theta_k$, for $k \leq K$.
+\State Compute $\facprob{i}{k}{\theta^0}{X}$, for $i \leq N$ and $k \leq K$
+\State $\displaystyle \theta_k \gets \frac{\sum_{i \leq N} \facprob{i}{k}{\theta^0}{X} x_i}{\sum_{i \leq N} \facprob{i}{k}{\theta^0}{X}}$, for $k \leq K$.
+\Until{$\texttt{close}\left(\theta, \theta^0\right)$}
 \State Add a small amount of noise to each centroid in $\theta$.
 \State $T \gets \texttt{reduce}(T)$
 \EndWhile

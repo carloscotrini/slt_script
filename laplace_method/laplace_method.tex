@@ -79,7 +79,7 @@ Show that
 Starting from here
 %
 \begin{equation}
-\left(\pi T\right)^{1/2} = \int \exp\left(-\frac{1}{T}\left(y - \left(1 + \sum_{i \leq N}c_i\right)^2\right)\right)dy,
+\left(\pi T\right)^{1/2} = \int \exp\left(-\frac{1}{T}\left(y - \left(1 + \sum_{i \leq N}c_i\right)\right)^2\right)dy,
 \end{equation}
 %
 show that
@@ -248,7 +248,7 @@ We now prove the claim.
 This result only implies that
 %
 \begin{equation}
-\exp\left(-\frac{1}{T}R(M, X)\right) = e^{-\frac{1}{2T}}\prod_{k \leq K}\exp\left(-\frac{1}{2NT}\left\|\sum_{i \leq N}M_{ik}x_i\right\|^2\right).
+\exp\left(-\frac{1}{T}R(M, X)\right) = e^{-\frac{1}{2T}}\prod_{k \leq K}\exp\left(\frac{1}{2NT}\left\|\sum_{i \leq N}M_{ik}x_i\right\|^2\right).
 \end{equation}
 %
 This is not an expression of the form $\textit{const} \exp\left(g(c)^\top g(c)\right)$, as recommended in Section~\ref{sec:laplace_recipe}. However, we show next how to adapt the cost function so that we can still follow all the other steps from Section~\ref{sec:laplace_recipe}.

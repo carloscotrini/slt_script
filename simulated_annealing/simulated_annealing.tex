@@ -126,7 +126,7 @@ Assume now that you want to estimate the probability $\prob(x \in C_k \mid X)$ t
 However, as we will see in Chapter~\ref{ch:da}, this distribution is computationally intractable. We can easily approximate this probability if we have a sample $c_1, c_2, \ldots, c_m$ from the Gibbs distribution as follows:
 %
 \begin{equation}
-\prob\left(x \in C_k \mid X\right) \approx \sum_{t \leq \ell} \frac{1}{m}\mathbf{1}\{c_t(x) = C_k\},
+\prob\left(x \in C_k \mid X\right) \approx \sum_{t \leq m} \frac{1}{m}\mathbf{1}\{c_t(x) = C_k\},
 \end{equation}
 %
 where
@@ -366,7 +366,7 @@ is $c$ again. Otherwise, flip a coin again. If heads comes out, the next sample 
 q(c' \mid c) =
 \begin{cases}
 1/4 & \text{if $c' = c + 1$ and $c < 24$},\\
-1/4 & \text{if $c' = c + 1$ and $c > 0$},\\
+1/4 & \text{if $c' = c - 1$ and $c > 0$},\\
 1/2 & \text{if $c' = c$},\\
 3/4 & \text{if $c' = c = 0$},\\
 3/4 & \text{if $c' = c = 24$}.
