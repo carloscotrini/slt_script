@@ -859,7 +859,7 @@ If we now substitute this into (\ref{eq:curr_upp_bound}), we get that
 We can rewrite the expectation as follows:
 
 \begin{align}
-&\mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)} \mid X', X'' \in A^{(n)}_{\epsilon/m}\right]\\ 
+&\frac{m}{\left\lvert\mathcal{C}\right\rvert} \mathbb{E}_{X', X''}\left[\frac{1}{\kappa\left(X', X''\right)} \mid X', X'' \in A^{(n)}_{\epsilon/m}\right]\\ 
 &= \mathbb{E}_{X', X''}\left[\exp\left(- \log\kappa\left(X', X''\right) + \log m - \log \left|\mathcal{C}\right|\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right]\\
 &\leq \mathbb{E}_{X', X''}\left[\exp\left(- \mathcal{E} + \frac{\epsilon}{m} + \log m - \log \left|\mathcal{C}\right|\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right]\\
 &= \mathbb{E}_{X', X''}\left[\exp\left(-\log\left|\mathcal{C}\right|\left(I - \frac{\epsilon}{m\log \left|\mathcal{C}\right|} - \frac{\log m}{\log \left|\mathcal{C}\right|}\right)\right) \mid X', X'' \in A^{(n)}_{\epsilon/m}\right].
