@@ -290,7 +290,7 @@ The value $\log p(X)$ is called \emph{$X$'s log likelihood}.
 Finding the parameter values that maximize this log likelihood is difficult, even with approximation methods. Nonetheless, it is possible to find a set of parameter values that locally maximize the log likelihood, using Algorithm~\ref{algo:vegan_flea}. To do this, we introduce a new set $\mathbf{Z} = \{\mathbf{Z}(i) \mid i \leq N\}$ of random variables. For $i \leq N$, $\mathbf{Z}(i)$ indicates to which category person $i$ belongs. Assume for a moment that, in addition of $X$, we also know, for $i \leq N$, the category $Z(i)$ where person $i$ belongs. One can show that $(X, Z)$'s log likelihood is given by the following.
 %
 \begin{equation}
-\log p(X, Z) = \sum_{i \leq N} \left( 
+\log p(X, Z) = \sum_{i \leq N}\sum_{j \leq D} \left( 
 \begin{array}{l}
 \log \nu_{Z(i)} + \\ 
 x_{i,Z(i)}\log {\mu_{Z(i), j}} + \\
